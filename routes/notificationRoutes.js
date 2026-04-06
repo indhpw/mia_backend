@@ -1,0 +1,155 @@
+// routes/notificationRoutes.js
+'use strict';
+const express = require('express');
+const router = express.Router();
+const { 
+    sendWeeklyReminder, 
+    sendAyyamulBidhReminder, 
+    sendCycleReminder, 
+    sendPaymentConfirmation,
+    sendTestNotification 
+} = require('../services/notificationService'); 
+const { Device } = require('../models');  // Import model Device
+
+console.log('notificationRoutes.js loaded');
+
+// Endpoint test reminder (tetap sama)
+router.post('/test-weekly', async (req, res) => {
+    try {
+        const { fcmToken } = req.body;
+
+        if (!fcmToken) {
+            return res.status(400).json({ error: 'fcmToken diperlukan' });
+        }
+
+        const result = await sendWeeklyReminder(fcmToken, true); // mode test
+
+        res.status(200).json(result);
+
+    } catch (error) {
+        console.error('Error testing weekly reminder:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+
+router.post('/test-ayyamul-bidh', async (req, res) => {
+    try {
+        const { fcmToken } = req.body;
+        if (!fcmToken) {
+            return res.status(400).json({ error: 'fcmToken diperlukan' });
+        }
+        const result = await sendAyyamulBidhReminder(fcmToken);
+        res.status(200).json(result);
+    } catch (error) {
+        console.error('Error testing Ayyamul Bidh reminder:', error.stack);
+        res.status(500).json({ error: 'Kesalahan server internal', details: error.message });
+    }
+});
+
+router.post('/test-cycle', async (req, res) => {
+    try {
+        const { fcmToken, startDate } = req.body;
+        if (!fcmToken || !startDate) {
+            return res.status(400).json({ error: 'fcmToken dan startDate diperlukan' });
+        }
+        const result = await sendCycleReminder(fcmToken, startDate);
+        res.status(200).json(result);
+    } catch (error) {
+        console.error('Error testing cycle reminder:', error.stack);
+        res.status(500).json({ error: 'Kesalahan server internal', details: error.message });
+    }
+});
+
+router.post('/test-payment', async (req, res) => {
+    try {
+        const { fcmToken, debtId, paymentDate } = req.body;
+        if (!fcmToken || !debtId || !paymentDate) {
+            return res.status(400).json({ error: 'fcmToken, debtId, dan paymentDate diperlukan' });
+        }
+        const result = await sendPaymentConfirmation(fcmToken, debtId, paymentDate);
+        res.status(200).json(result);
+    } catch (error) {
+        console.error('Error testing payment confirmation:', error.stack);
+        res.status(500).json({ error: 'Kesalahan server internal', details: error.message });
+    }
+});
+
+// Endpoint utama untuk menyimpan/update FCM token (sudah ada, tapi diperbaiki)
+router.post('/save-token', async (req, res) => {
+    try {
+        const { device_id, token } = req.body;
+        if (!device_id || !token) {
+            return res.status(400).json({ error: 'device_id dan token diperlukan' });
+        }
+
+        const [updated] = await Device.update(
+            { fcm_token: token },
+            { where: { device_id } }  // Gunakan device_id sebagai primary key
+        );
+
+        if (updated === 0) {
+            return res.status(404).json({ error: 'Device tidak ditemukan' });
+        }
+
+        console.log(`FCM token updated for device_id ${device_id}: ${token}`);
+        res.status(200).json({ message: 'FCM token saved successfully' });
+    } catch (error) {
+        console.error('Error saving FCM token:', error.stack);
+        res.status(500).json({ error: 'Kesalahan server internal', details: error.message });
+    }
+});
+
+router.post('/test', async (req, res) => {
+
+  try {
+
+    const { fcmToken } = req.body;
+
+    if (!fcmToken) {
+      return res.status(400).json({
+        error: 'fcmToken diperlukan'
+      });
+    }
+
+    const result = await sendTestNotification(fcmToken);
+
+    res.json(result);
+
+  } catch (error) {
+
+    console.error(error);
+
+    res.status(500).json({
+      error: error.message
+    });
+  }
+
+});
+
+
+// Opsional: endpoint baru untuk registrasi device tanpa FCM token
+// Jika kamu ingin memisahkan dari notificationRoutes, bisa pindah ke deviceroutes.js
+router.post('/register', async (req, res) => {
+    try {
+        const { fcmToken } = req.body || {};  // FCM token optional
+
+        const device = await Device.create({
+            fcm_token: fcmToken || null,
+            created_at: new Date(),
+        });
+
+        console.log('Device created:', device.toJSON());
+
+        res.status(201).json({
+            success: true,
+            device_id: device.device_id,
+            message: 'Device berhasil didaftarkan'
+        });
+    } catch (error) {
+        console.error('Error registering device:', error.stack);
+        res.status(500).json({ error: 'Kesalahan server internal', details: error.message });
+    }
+});
+
+module.exports = router;
