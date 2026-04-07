@@ -20,13 +20,13 @@ app.use((req, res, next) => {
 });
 
 // Inisialisasi Firebase
-const serviceAccount = require('./config/appmia-e39ce-firebase-adminsdk-fbsvc-f8cebe06cb.json');
-if (!admin.apps.length) {
-    admin.initializeApp({
-        credential: admin.credential.cert(serviceAccount),
-    });
-    console.log('Firebase initialized');
-}
+const serviceAccount = JSON.parse(process.env.FIREBASE_CONFIG);
+
+serviceAccount.private_key = serviceAccount.private_key.replace(/\\n/g, '\n');
+
+admin.initializeApp({
+  credential: admin.credential.cert(serviceAccount)
+});
 
 // Routes
 app.use('/api/devices', require('./routes/deviceRoutes'));
