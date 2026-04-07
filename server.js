@@ -20,13 +20,20 @@ app.use((req, res, next) => {
 });
 
 // Inisialisasi Firebase
-const serviceAccount = JSON.parse(process.env.FIREBASE_CONFIG);
+let serviceAccount;
 
-serviceAccount.private_key = serviceAccount.private_key.replace(/\\n/g, '\n');
+if (process.env.FIREBASE_CONFIG) {
+  serviceAccount = JSON.parse(process.env.FIREBASE_CONFIG);
+  serviceAccount.private_key = serviceAccount.private_key.replace(/\\n/g, '\n');
 
-admin.initializeApp({
-  credential: admin.credential.cert(serviceAccount)
-});
+  admin.initializeApp({
+    credential: admin.credential.cert(serviceAccount),
+  });
+
+  console.log("Firebase initialized");
+} else {
+  console.log("FIREBASE_CONFIG tidak ditemukan, skip Firebase");
+}
 
 // Routes
 app.use('/api/devices', require('./routes/deviceRoutes'));
@@ -85,5 +92,6 @@ async function syncDatabase() {
 }
 
 console.log("ENV:", process.env.DATABASE_URL);
+console.log("DATABASE_URL:", process.env.DATABASE_URL);
 
 syncDatabase();
