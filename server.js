@@ -71,7 +71,7 @@ app.use((err, req, res, next) => {
     res.status(500).json({ error: 'Kesalahan server internal', details: err.message });
 });
 
- const PORT = process.env.PORT;
+ const PORT = process.env.PORT || 3000;
  //start server
     app.listen(PORT, '0.0.0.0', () => {
         console.log(`Server running on port ${PORT}`);            
@@ -100,5 +100,6 @@ async function syncDatabase() {
 
 console.log("ENV:", process.env.DATABASE_URL);
 console.log("DATABASE_URL:", process.env.DATABASE_URL);
+console.log("PORT:", process.env.PORT);
 
 syncDatabase();
