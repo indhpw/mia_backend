@@ -68,6 +68,13 @@ app.use((err, req, res, next) => {
     res.status(500).json({ error: 'Kesalahan server internal', details: err.message });
 });
 
+ const PORT = process.env.PORT;
+ //start server
+    app.listen(PORT, () => {
+        console.log(`Server running on port ${PORT}`);            
+    });
+
+
 // Sync database sequentially
 async function syncDatabase() {
     try {
@@ -83,13 +90,9 @@ async function syncDatabase() {
         console.log('Loading NotificationService...');
         require('./services/notificationService');
         console.log('NotificationService loaded');
-
-        const PORT = process.env.PORT;
-        app.listen(PORT, () => {
-            console.log(`Server running on port ${PORT}`);
-            syncDatabase();
-        });
-    } 
+    } catch (err){
+        console.error('Failed to sync database:', err);
+    }
 }
 
 console.log("ENV:", process.env.DATABASE_URL);
