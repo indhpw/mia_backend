@@ -51,6 +51,11 @@ console.log('All routes registered:', {
 });
 
 // Test endpoint
+app.get('/', (req, res) => {
+    console.log('Hit /api/test');
+    res.json({ message: 'Server is running' });
+});
+
 app.get('/api/test', (req, res) => {
     console.log('Hit /api/test');
     res.json({ message: 'Server is running' });
