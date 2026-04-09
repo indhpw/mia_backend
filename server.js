@@ -24,17 +24,19 @@ app.use((req, res, next) => {
 // Inisialisasi Firebase
 let serviceAccount;
 
+try{
 if (process.env.FIREBASE_CONFIG) {
-  serviceAccount = JSON.parse(process.env.FIREBASE_CONFIG);
+let  serviceAccount = JSON.parse(process.env.FIREBASE_CONFIG);
   serviceAccount.private_key = serviceAccount.private_key.replace(/\\n/g, '\n');
 
   admin.initializeApp({
     credential: admin.credential.cert(serviceAccount),
-  });
+    });
 
   console.log("Firebase initialized");
-} else {
-  console.log("FIREBASE_CONFIG tidak ditemukan, skip Firebase");
+    }
+} catch (err) {
+  console.error("Firebase error:", err.message);
 }
 
 // Routes
@@ -71,7 +73,10 @@ app.use((err, req, res, next) => {
     res.status(500).json({ error: 'Kesalahan server internal', details: err.message });
 });
 
- const PORT = process.env.PORT || 3000;
+ const PORT = process.env.PORT || 8080;
+
+ console.log("PORT:", PORT);
+
  //start server
     app.listen(PORT, '0.0.0.0', () => {
         console.log(`Server running on port ${PORT}`);            
@@ -100,6 +105,5 @@ async function syncDatabase() {
 
 console.log("ENV:", process.env.DATABASE_URL);
 console.log("DATABASE_URL:", process.env.DATABASE_URL);
-console.log("PORT:", process.env.PORT);
 
 syncDatabase();
