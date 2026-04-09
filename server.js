@@ -84,13 +84,12 @@ async function syncDatabase() {
         require('./services/notificationService');
         console.log('NotificationService loaded');
 
-        const PORT = process.env.PORT || 3000;
-        app.listen(PORT, '0.0.0.0', () => {
+        const PORT = process.env.PORT;
+        app.listen(PORT, () => {
             console.log(`Server running on port ${PORT}`);
+            syncDatabase();
         });
-    } catch (err) {
-        console.error('Failed to sync database:', err);
-    }
+    } 
 }
 
 console.log("ENV:", process.env.DATABASE_URL);
