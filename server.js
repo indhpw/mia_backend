@@ -14,10 +14,12 @@ console.log('Starting server...');
 app.use(express.json());
 
 // Log requests
+if(process.env.NODE_ENV !== 'production'){
 app.use((req, res, next) => {
     console.log(`[${new Date().toISOString()}] ${req.method} ${req.originalUrl} Body:`, req.body);
     next();
 });
+}
 
 // Inisialisasi Firebase
 let serviceAccount;
