@@ -167,6 +167,23 @@ exports.updateFastingDebt = async (req, res) => {
     }
 };
 
+exports.getFastingDebtById = async (req, res) => {
+    try {
+        const { debt_id } = req.params;
+
+        const debt = await FastingDebt.findByPk(debt_id);
+
+        if (!debt) {
+            return res.status(404).json({ message: 'Debt not found' });
+        }
+
+        res.json(debt);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Internal server error' });
+    }
+};
+
 exports.deleteFastingDebt = [
     param('debt_id').isInt().withMessage('Debt ID must be an integer'),
     async (req, res) => {
