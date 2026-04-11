@@ -4,13 +4,8 @@ const router = express.Router();
 
 const fastingController = require('../controllers/fastingController');
 
-console.log('Controller check:', fastingController);
-console.log('createFastingDebt:', fastingController.createFastingDebt);
-console.log('createFastingPayment:', fastingController.createFastingPayment);
+// ================= VALIDATION =================
 
-console.log('fastingRoutes.js loaded');
-
-// middleware validasi
 const validate = (req, res, next) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -20,37 +15,74 @@ const validate = (req, res, next) => {
     next();
 };
 
-// ✅ VALIDATOR PAYMENT (INI YANG KAMU KURANGIN TADI)
 const validatePayment = [
-    body('debt_id').isInt().withMessage('debt_id must be an integer'),
-    body('payment_date').isISO8601().withMessage('payment_date must be valid'),
-    body('amount').isInt({ min: 1 }).withMessage('amount must be >= 1'),
+    body('debt_id').isInt(),
+    body('payment_date').isISO8601(),
+    body('amount').isInt({ min: 1 }),
 ];
 
-// VALIDATOR DEBT UPDATE
-const validateDebtUpdate = [
+const validateDebtId = [
     param('debt_id').isInt().withMessage('debt_id must be integer'),
+];
+
+const validateDeviceId = [
+    param('device_id').isInt().withMessage('device_id must be integer'),
+];
+
+const validateDebtUpdate = [
+    param('debt_id').isInt(),
     body('paid_days').optional().isInt(),
     body('status').optional().isIn(['lunas', 'belum_lunas']),
-];
-
-// VALIDATOR GET
-const validateGetDebts = [
-    param('device_id').isInt().withMessage('device_id must be integer'),
+    body('paid_dates').optional().isArray(),
 ];
 
 // ================= ROUTES =================
 
-// fasting payments
-router.post('/fasting_payments', validatePayment, validate, fastingController.createFastingPayment);
-router.get('/fasting_payments/:device_id', fastingController.getPayments);
-router.post('/fasting/debts/:debt_id/pay', validatePayment, validate, fastingController.createFastingPayment);
+// 🔹 GET debt by ID
+router.get('/debts/:debt_id',
+    validateDebtId,
+    validate,
+    fastingController.getFastingDebtById
+);
 
-// fasting debts
-router.get('/fasting_debts/:device_id', validateGetDebts, validate, fastingController.getFastingDebts);
-router.post('/fasting_debts', validate, fastingController.createFastingDebt);
+// 🔹 GET debts by device
+router.get('/debts/device/:device_id',
+    validateDeviceId,
+    validate,
+    fastingController.getFastingDebts
+);
 
-// OPTIONAL (kalau nanti kamu buat function-nya)
-/// router.put('/fasting_debts/:debt_id', validateDebtUpdate, validate, fastingController.updateFastingDebt);
+// 🔹 CREATE debt
+router.post('/debts',
+    fastingController.createFastingDebt
+);
+
+// 🔹 UPDATE debt
+router.put('/debts/:debt_id',
+    validateDebtUpdate,
+    validate,
+    fastingController.updateFastingDebt
+);
+
+// 🔹 PAY debt
+router.post('/debts/:debt_id/pay',
+    validatePayment,
+    validate,
+    fastingController.createFastingPayment
+);
+
+// 🔹 GET payments
+router.get('/payments/:device_id',
+    validateDeviceId,
+    validate,
+    fastingController.getPayments
+);
+
+// 🔹 CREATE payment (optional)
+router.post('/payments',
+    validatePayment,
+    validate,
+    fastingController.createFastingPayment
+);
 
 module.exports = router;
