@@ -1,6 +1,7 @@
 const { body, param, validationResult } = require('express-validator');
 const { Op } = require('sequelize');
 const db = require('../models');
+const { messaging } = require('firebase-admin');
 const FastingDebt = db.FastingDebt;
 const FastingPayment = db.FastingPayment;
 const MenstruationRecord = db. MenstruationRecord;
@@ -101,7 +102,8 @@ exports.createFastingPayment = [
         } catch (error) {
             console.error('FULL ERROR:', error);
             console.error('SQL MESSAGE:', error.parent?.sqlMessage);
-            console.error('SQL:', error.parent?.sql);            res.status(500).json({ error: 'Internal server error', details: error.message });
+            console.error('SQL:', error.parent?.sql);           
+            res.status(500).json({ error: 'Internal server error', details: error.message });
         }
     }
 ];
@@ -152,11 +154,11 @@ exports.updateFastingDebt = async (req, res) => {
             return res.status(404).json({ error: 'Debt not found' });
         }
 
-        await debt.update({
-            paid_days: paid_days ?? debt.paid_days,
-            status: status ?? debt.status,
-            paid_dates: paid_dates ?? debt.paid_dates
-        });
+        if (paid_days !== undefined) debt.paid_days = paid_days;
+        if (status !== undefined) debt.status = status;
+        if (paid_dates !== undefined) debt.paid_dates = JSON.stringify(paid_dates);
+
+        await debt.save();
 
         res.status(200).json({ message: 'Debt updated' });
     } catch (error) {
