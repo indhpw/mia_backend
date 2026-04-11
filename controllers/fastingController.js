@@ -7,7 +7,6 @@ const FastingPayment = db.FastingPayment;
 const MenstruationRecord = db. MenstruationRecord;
 
 exports.createFastingDebt = [
-    body('device_id').isInt().withMessage('Device ID must be an integer'),
     body('record_id').optional().isInt().withMessage('Record ID must be an integer'),
     body('missed_days').isInt({ min: 1 }).withMessage('Missed days must be a positive integer'),
     body('debt_date').isISO8601().withMessage('Debt date must be a valid date'),
@@ -52,61 +51,30 @@ console.error('SQL:', error.parent?.sql);
     }
 ];
 
-exports.createFastingPayment = [
-    body('debt_id').isInt().withMessage('Debt ID must be an integer'),
-    body('payment_date').isISO8601().withMessage('Payment date must be a valid date'),
-    body('amount').isInt({ min: 1 }).withMessage('Amount must be a positive integer'),
-    async (req, res) => {
-        const errors = validationResult(req);
-        if (!errors.isEmpty()) {
-            console.log('Validation errors:', errors.array());
-            return res.status(400).json({ errors: errors.array() });
+exports.createFastingPayment = async (req, res) => {
+    try {
+        const { debt_id } = req.params;
+        const { payment_date, amount } = req.body;
+
+        const debt = await FastingDebt.findByPk(debt_id);
+
+        if (!debt) {
+            return res.status(404).json({ message: 'Debt not found' });
         }
-        try {
-            const { debt_id, payment_date, amount } = req.body;
-            const debt = await FastingDebt.findByPk(debt_id);
-            if (!debt) {
-                return res.status(404).json({ error: 'Debt not found' });
-            }
 
-            // Validasi jumlah pembayaran
-            const newPaidDays = debt.paid_days + amount;
-            if (newPaidDays > debt.missed_days) {
-                return res.status(400).json({ error: 'Payment exceeds missed days' });
-            }
+        const payment = await FastingPayment.create({
+            debt_id,
+            device_id: debt.device_id, // ✅ ambil dari debt
+            payment_date,
+            amount
+        });
 
-            // Perbarui paid_dates
-            let paidDates = Array.isArray(debt.paid_dates)
-            ? debt.paid_dates
-            : JSON.parse(debt.paid_dates || '[]');
-            
-            paidDates.push(payment_date);
-
-            // Perbarui debt
-            await debt.update({
-                paid_days: newPaidDays,
-                status: newPaidDays === debt.missed_days ? 'lunas' : 'belum_lunas',
-                paid_dates: paidDates
-            });
-
-            // Buat payment record
-            const payment = await FastingPayment.create({
-                debt_id,
-                payment_date,
-                amount,
-                created_at: new Date()
-            });
-
-            console.log('Fasting payment created:', payment.toJSON());
-            res.status(201).json({ payment, debt });
-        } catch (error) {
-            console.error('FULL ERROR:', error);
-            console.error('SQL MESSAGE:', error.parent?.sqlMessage);
-            console.error('SQL:', error.parent?.sql);           
-            res.status(500).json({ error: 'Internal server error', details: error.message });
-        }
+        res.status(201).json(payment);
+    } catch (error) {
+        console.error('FULL ERROR:', error);
+        res.status(500).json({ message: error.message });
     }
-];
+};
 
 exports.getPayments = async (req, res) => {
     try {
