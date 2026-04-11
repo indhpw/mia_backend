@@ -39,7 +39,7 @@ const validateDebtUpdate = [
 // ================= ROUTES =================
 
 // 🔹 GET debt by ID
-router.get('/debts/:debt_id',
+router.get('/debts/:debt_id', 
     validateDebtId,
     validate,
     fastingController.getFastingDebtById
