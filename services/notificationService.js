@@ -5,6 +5,7 @@ const cron = require('node-cron');
 const momentHijri = require('moment-hijri');
 const { Sequelize, Op } = require('sequelize');
 const { Device, FastingDebt } = require('../models');
+const { getTomorrowHijri, getHijriWithOverride } = require('../utils/hijriUtils');
 require('dotenv').config();
 
 // Inisialisasi Firebase Admin (hanya sekali)
@@ -187,16 +188,14 @@ cron.schedule('0 7 * * *', async () => {
 
   const today = new Date().getDay();
 
-  const m = momentHijri();
-  const todayHijri = m.iDate();
-  const besokHijri = m.clone().add(1, 'day').iDate();
-  const hijriMonth = m.iMonth();
+  const todayHijri = getHijriWithOverride();
+  const besokHijri = getTomorrowHijri();
 
-  console.log("Hari ini Hijri:", todayHijri);
+  console.log("Hari ini Hijri:", todayHijri.day);
   console.log("Besok Hijri:", besokHijri);
 
   // MATIKAN SAAT RAMADAN
-  if (hijriMonth === 8) {
+  if (todayHijri.month === 8) {
     console.log("Ramadhan - semua notif puasa sunnah dimatikan");
     return;
   }
@@ -204,14 +203,14 @@ cron.schedule('0 7 * * *', async () => {
   const users = await getUsersWithHutang();
 
   // AYYAMUL BIDH (notif H-1)
-  if (besokHijri >= 13 && besokHijri <= 15) {
+  if (besokHijri.day >= 13 && besokHijri.day <= 15) {
 
     for (const user of users) {
       await messaging.send({
         token: user.fcm_token,
         notification: {
           title: 'Pengingat Ayyamul Bidh',
-          body: `Besok tanggal ${besokHijri} Hijriah. Kamu masih punya utang puasa, mau sekalian dibayar?`
+          body: `Besok tanggal ${besokHijri.day} bulan Hijriah. Kamu masih punya utang puasa, mau sekalian dibayar?`
         }
       });
     }
@@ -241,15 +240,14 @@ cron.schedule('0 7 * * *', async () => {
 async function sendAyyamulBidhReminder(fcmToken) {
   try {
 
-    const m = momentHijri();
-    const hijriDay = m.iDate();
-    const besokHijri = m.clone().add(1, 'day').iDate();
+    const besokHijri = getTomorrowHijri();
+    const todayHijri = getHijriWithOverride();
 
     const message = {
       token: fcmToken,
       notification: {
         title: "Pengingat Ayyamul Bidh",
-        body: `Besok ${besokHijri} Hijriah dan kamu masih ada utang puasa. Apakah mau membayar utang puasa besok?`
+        body: `Besok ${besokHijri.day} bulan Hijriah dan kamu masih ada utang puasa. Apakah mau membayar utang puasa besok?`
       },
       data: {
         type: "ayyamul_bidh"
@@ -279,11 +277,13 @@ async function sendWeeklyReminder(fcmToken, isTest = false) {
   const hijriMonth = m.iMonth();
 
     if (hijriMonth === 8){
-    console.log("Ramadhan - semua notif puasa sunnah dimatikan");
-    return;
-  }
+      return {
+        success: false,
+        message: "Ramadan - notifikasi dimatikan"
+      }
+  };
 
-    if (today !== 0 && today !== 3) {
+    if (!isTest && today !== 0 && today !== 3) {
       return{
         success: false,
         message: " besok gaada puasa sunnah"
