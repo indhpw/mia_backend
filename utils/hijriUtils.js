@@ -5,7 +5,7 @@ const moment = require('moment');
 
 const getOverride = () => {
   try {
-    const filePath = path.join(__dirname, '../config/hijri_override.json');
+    const filePath = path.join(__dirname, '../data/kemenag_hijri.json');
     const data = fs.readFileSync(filePath, 'utf-8');
     return JSON.parse(data).overrides;
   } catch (e) {
