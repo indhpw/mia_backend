@@ -240,7 +240,6 @@ async function sendAyyamulBidhReminder(fcmToken) {
 
     const todayHijri = momentHijri();
     const hijriDay = momentHijri.iDate();
-    
 
     const message = {
       token: fcmToken,
@@ -272,6 +271,7 @@ async function sendAyyamulBidhReminder(fcmToken) {
 async function sendWeeklyReminder(fcmToken, isTest = false) {
 
   const today = new Date().getDay();
+  const hijriMonth = momentHijri().iMonth();
 
     if (hijriMonth === 8){
     console.log("Ramadhan - semua notif puasa sunnah dimatikan");
