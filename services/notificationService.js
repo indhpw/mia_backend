@@ -239,6 +239,8 @@ async function sendAyyamulBidhReminder(fcmToken) {
 
     const todayHijri = momentHijri();
     const hijriDay = momentHijri().iDate();
+      const besokHijri = momentHijri.clone().add(1, 'day').iDate();
+
 
     const message = {
       token: fcmToken,
