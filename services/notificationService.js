@@ -154,7 +154,7 @@ async function sendTestNotification(fcmToken) {
       token: fcmToken,
       notification: {
         title: "Test Notifikasi",
-        body: "Jika kamu melihat ini, berarti FCM berhasil 🎉"
+        body: "ciee udah bisa aowkwkwk 🎉"
       },
       data: {
         type: "test_notification"
@@ -267,11 +267,28 @@ async function sendAyyamulBidhReminder(fcmToken) {
   }
 }
 
-async function sendWeeklyReminder(fcmToken) {
-  return {
-    success: true,
-    mes: "Weekly reminder dummy"
-  };
+async function sendWeeklyReminder(fcmToken, isTest = false) {
+
+  const today = new Date().getDay();
+
+  if (!isTest && today !== 0 && today !== 3) {
+    return {
+      success: false,
+      message: "Bukan hari reminder"
+    };
+  }
+
+  const targetDay = today === 0 ? "Senin" : "Kamis";
+
+  await messaging.send({
+    token: fcmToken,
+    notification: {
+      title: "Pengingat Puasa Sunnah",
+      body: `Besok hari ${targetDay} dan kamu masih ada utang puasa. Apakah mau membayar utang puasa besok?`
+    }
+  });
+
+  return { success: true };
 }
 
 async function sendCycleReminder(fcmToken, startDate) {
