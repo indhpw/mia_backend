@@ -209,10 +209,10 @@ cron.schedule('0 8 * * 0,3', async () => {
       token: user.fcm_token,
       notification: {
         title: 'Pengingat Utang Puasa',
-        body: message
+        body: "Masih ada utang puasa yang harus dibayar nih"
       },
       data: {
-        type: 'reminder_hutang_puasa'
+        screen: "Niat_Puasa"
       }
     });
 
@@ -272,10 +272,70 @@ cron.schedule('0 7 * * *', async () => {
   timezone: 'Asia/Jakarta'
 });
 
+async function sendAyyamulBidhReminder(fcmToken) {
+  try {
+
+    const todayHijri = momentHijri();
+    const hijriDay = todayHijri.iDate();
+
+    const message = {
+      token: fcmToken,
+      notification: {
+        title: "Pengingat Ayyamul Bidh",
+        body: `Hari ini tanggal ${hijriDay} Hijriah, jangan lupa puasa sunnah 😊`
+      },
+      data: {
+        type: "ayyamul_bidh"
+      }
+    };
+
+    await messaging.send(message);
+
+    return {
+      success: true,
+      message: "Notifikasi Ayyamul Bidh berhasil dikirim"
+    };
+
+  } catch (error) {
+    console.error("Error sendAyyamulBidhReminder:", error);
+    return {
+      success: false,
+      message: error.message
+    };
+  }
+}
+
+async function sendWeeklyReminder(fcmToken) {
+  return {
+    success: true,
+    mes: "Weekly reminder dummy"
+  };
+}
+
+async function sendCycleReminder(fcmToken, startDate) {
+    return {
+    success: true,
+    mes: "Cycle reminder dummy"
+  };
+}
+
+async function sendPaymentConfirmation(fcmToken, debtId, paymentDate) {
+ return {
+    success: true,
+    mes: "Payment confirmation dummy"
+  };}
+
 /**
  * Export jika ingin digunakan di file lain
  */
 module.exports = {
   getUsersWithHutang,
-  sendTestNotification
+  sendTestNotification,
+  sendTestNotification,
+  sendWeeklyReminder,
+  sendAyyamulBidhReminder,
+  sendCycleReminder
 };
+
+console.log("DEBUG weekly:", sendWeeklyReminder);
+console.log("DEBUG ayyamul:", sendAyyamulBidhReminder);
