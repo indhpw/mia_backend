@@ -186,33 +186,35 @@ async function sendTestNotification(fcmToken) {
 cron.schedule('0 7 * * *', async () => {
 
   const today = new Date().getDay();
-  const todayHijri = momentHijri().iDate();
-  const besokHijri = momentHijri().add(1, 'day').iDate();
-  const hijriMonth = todayHijri.iMonth();
-  const hijriDay = todayHijri.iDate();
 
-  if (hijriMonth === 8){
+  const todayHijriMoment = momentHijri();
+  const todayHijri = todayHijriMoment.iDate();
+  const besokHijri = todayHijriMoment.clone().add(1, 'day').iDate();
+  const hijriMonth = todayHijriMoment.iMonth();
+
+  // 🚫 MATIKAN SAAT RAMADAN
+  if (hijriMonth === 8) {
     console.log("Ramadhan - semua notif puasa sunnah dimatikan");
     return;
   }
 
   const users = await getUsersWithHutang();
 
-  // ayyamul bidh
-  if (todayHijri >= 12 && todayHijri <= 14 && besokHijri >= 13 && besokHijri <= 15) {
+  // ✅ AYYAMUL BIDH (notif H-1)
+  if (besokHijri >= 13 && besokHijri <= 15) {
 
     for (const user of users) {
       await messaging.send({
         token: user.fcm_token,
         notification: {
           title: 'Pengingat Ayyamul Bidh',
-          body: `Besok ${besokHijri} Hijriah dan kamu masih ada utang puasa. Apakah mau membayar utang puasa besok?`
+          body: `Besok tanggal ${besokHijri} Hijriah. Kamu masih punya utang puasa, mau sekalian dibayar?`
         }
       });
     }
   }
 
-  //senin kamis
+  // ✅ SENIN & KAMIS (notif H-1)
   if (today === 0 || today === 3) {
 
     const targetDay = today === 0 ? "Senin" : "Kamis";
@@ -222,7 +224,7 @@ cron.schedule('0 7 * * *', async () => {
         token: user.fcm_token,
         notification: {
           title: 'Pengingat Puasa Sunnah',
-          body: `Besok hari ${targetDay} dan kamu masih ada utang puasa. Apakah mau membayar utang puasa besok?`
+          body: `Besok hari ${targetDay}. Kamu masih punya utang puasa, mau dibayar?`
         }
       });
     }
@@ -237,14 +239,14 @@ async function sendAyyamulBidhReminder(fcmToken) {
   try {
 
     const todayHijri = momentHijri();
-    const hijriDay = todayHijri.iDate();
+    const hijriDay = momentHijri.iDate();
     
 
     const message = {
       token: fcmToken,
       notification: {
         title: "Pengingat Ayyamul Bidh",
-        body: `Kamu masih memiliki ${user.hutang} hari utang puasa. Apakah mau membayar besok karena besok adalah Ayyamul Bidh (tanggal ${hijriDay} Hijriah)`
+        body: `Besok ${besokHijri} Hijriah dan kamu masih ada utang puasa. Apakah mau membayar utang puasa besok?`
       },
       data: {
         type: "ayyamul_bidh"
@@ -271,10 +273,15 @@ async function sendWeeklyReminder(fcmToken, isTest = false) {
 
   const today = new Date().getDay();
 
+    if (hijriMonth === 8){
+    console.log("Ramadhan - semua notif puasa sunnah dimatikan");
+    return;
+  }
+
   if (!isTest && today !== 0 && today !== 3) {
     return {
       success: false,
-      message: "Bukan hari reminder"
+      message: "besok gaada puasa sunnah"
     };
   }
 
@@ -309,7 +316,6 @@ async function sendPaymentConfirmation(fcmToken, debtId, paymentDate) {
  */
 module.exports = {
   getUsersWithHutang,
-  sendTestNotification,
   sendTestNotification,
   sendWeeklyReminder,
   sendAyyamulBidhReminder,
