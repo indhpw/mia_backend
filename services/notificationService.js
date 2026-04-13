@@ -301,3 +301,4 @@ module.exports = {
 
 console.log("DEBUG weekly:", sendWeeklyReminder);
 console.log("DEBUG ayyamul:", sendAyyamulBidhReminder);
+console.log("DEBUG test notif", sendTestNotification);
