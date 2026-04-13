@@ -182,107 +182,69 @@ async function sendTestNotification(fcmToken) {
   }
 }
 
+//CRON untuk notifikasi senin kamis dan ayyamul bidh
+cron.schedule('0 7 * * *', async () => {
 
+  const today = new Date().getDay();
+  const todayHijri = momentHijri().iDate();
+  const besokHijri = momentHijri().add(1, 'day').iDate();
+  const hijriMonth = todayHijri.iMonth();
+  const hijriDay = todayHijri.iDate();
 
-/**
- * ================================
- * CRON 1 - Minggu & Rabu
- * ================================
- * Pengingat bayar hutang puasa
- */
-cron.schedule('0 8 * * 0,3', async () => {
-
-  console.log('Cron Minggu & Rabu dijalankan');
-
-  const users = await getUsersWithHutang();
-
-  if (users.length === 0) {
-    console.log('Tidak ada user dengan hutang puasa');
+  if (hijriMonth === 8){
+    console.log("Ramadhan - semua notif puasa sunnah dimatikan");
     return;
   }
 
-  for (const user of users) {
+  const users = await getUsersWithHutang();
 
-    const message = `Kamu masih memiliki ${user.hutang} hari utang puasa. Yuk segera lunasi!`;
-
-    await messaging.send({
-      token: user.fcm_token,
-      notification: {
-        title: 'Pengingat Utang Puasa',
-        body: "Masih ada utang puasa yang harus dibayar nih"
-      },
-      data: {
-        screen: "Niat_Puasa"
-      }
-    });
-
-  }
-
-  console.log(`Pengingat Minggu/Rabu selesai untuk ${users.length} user`);
-
-}, {
-  timezone: 'Asia/Jakarta'
-});
-
-/**
- * ================================
- * CRON 2 - Tanggal 12,13,14 Hijriah
- * ================================
- * Pengingat khusus Ayyamul Bidh
- */
-cron.schedule('0 7 * * *', async () => {
-
-  const todayHijri = momentHijri();
-  const hijriDay = todayHijri.iDate();
-
-  if (hijriDay >= 12 && hijriDay <= 14) {
-
-    console.log(`Tanggal ${hijriDay} Hijriah - Kirim pengingat khusus`);
-
-    const users = await getUsersWithHutang();
-
-    if (users.length === 0) {
-      console.log('Tidak ada user dengan hutang puasa');
-      return;
-    }
+  // ayyamul bidh
+  if (todayHijri >= 12 && todayHijri <= 14 && besokHijri >= 13 && besokHijri <= 15) {
 
     for (const user of users) {
-
-      const message =
-        `Hari ini tanggal ${hijriDay} Hijriah. Kamu masih memiliki ${user.hutang} hari utang puasa. Jangan lupa dibayar ya!`;
-
       await messaging.send({
         token: user.fcm_token,
         notification: {
-          title: 'Pengingat Khusus Ayyamul Bidh',
-          body: message
-        },
-        data: {
-          type: 'reminder_hutang_puasa',
-          hijri_day: hijriDay.toString()
+          title: 'Pengingat Ayyamul Bidh',
+          body: `Besok ${besokHijri} Hijriah dan kamu masih ada utang puasa. Apakah mau membayar utang puasa besok?`
         }
       });
-
     }
+  }
 
-    console.log(`Pengingat ${hijriDay} Hijriah selesai untuk ${users.length} user`);
+  //senin kamis
+  if (today === 0 || today === 3) {
+
+    const targetDay = today === 0 ? "Senin" : "Kamis";
+
+    for (const user of users) {
+      await messaging.send({
+        token: user.fcm_token,
+        notification: {
+          title: 'Pengingat Puasa Sunnah',
+          body: `Besok hari ${targetDay} dan kamu masih ada utang puasa. Apakah mau membayar utang puasa besok?`
+        }
+      });
+    }
   }
 
 }, {
   timezone: 'Asia/Jakarta'
 });
+
 
 async function sendAyyamulBidhReminder(fcmToken) {
   try {
 
     const todayHijri = momentHijri();
     const hijriDay = todayHijri.iDate();
+    
 
     const message = {
       token: fcmToken,
       notification: {
         title: "Pengingat Ayyamul Bidh",
-        body: `Hari ini tanggal ${hijriDay} Hijriah, jangan lupa puasa sunnah 😊`
+        body: `Kamu masih memiliki ${user.hutang} hari utang puasa. Apakah mau membayar besok karena besok adalah Ayyamul Bidh (tanggal ${hijriDay} Hijriah)`
       },
       data: {
         type: "ayyamul_bidh"
