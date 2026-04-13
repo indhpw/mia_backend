@@ -195,7 +195,7 @@ cron.schedule('0 7 * * *', async () => {
   console.log("Hari ini Hijri:", todayHijri);
   console.log("Besok Hijri:", besokHijri);
 
-  // 🚫 MATIKAN SAAT RAMADAN
+  // MATIKAN SAAT RAMADAN
   if (hijriMonth === 8) {
     console.log("Ramadhan - semua notif puasa sunnah dimatikan");
     return;
@@ -203,7 +203,7 @@ cron.schedule('0 7 * * *', async () => {
 
   const users = await getUsersWithHutang();
 
-  // ✅ AYYAMUL BIDH (notif H-1)
+  // AYYAMUL BIDH (notif H-1)
   if (besokHijri >= 13 && besokHijri <= 15) {
 
     for (const user of users) {
@@ -217,7 +217,7 @@ cron.schedule('0 7 * * *', async () => {
     }
   }
 
-  // ✅ SENIN & KAMIS (notif H-1)
+  // SENIN & KAMIS (notif H-1)
   if (today === 0 || today === 3) {
 
     const targetDay = today === 0 ? "Senin" : "Kamis";
@@ -243,7 +243,7 @@ async function sendAyyamulBidhReminder(fcmToken) {
 
     const m = momentHijri();
     const hijriDay = m.iDate();
-    const besokHijri = m.clone().add(1, 'day'.iDate);
+    const besokHijri = m.clone().add(1, 'day').iDate();
 
     const message = {
       token: fcmToken,
