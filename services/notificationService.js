@@ -192,6 +192,9 @@ cron.schedule('0 7 * * *', async () => {
   const besokHijri = m.clone().add(1, 'day').iDate();
   const hijriMonth = m.iMonth();
 
+  console.log("Hari ini Hijri:", todayHijri);
+  console.log("Besok Hijri:", besokHijri);
+
   // 🚫 MATIKAN SAAT RAMADAN
   if (hijriMonth === 8) {
     console.log("Ramadhan - semua notif puasa sunnah dimatikan");
@@ -324,7 +327,6 @@ module.exports = {
   sendCycleReminder
 };
 
-console.log("BESOK HIJRI:", besokHijri);
 console.log("DEBUG weekly:", sendWeeklyReminder);
 console.log("DEBUG ayyamul:", sendAyyamulBidhReminder);
 console.log("DEBUG test notif", sendTestNotification);
