@@ -191,7 +191,7 @@ cron.schedule('0 7 * * *', async () => {
   const todayHijri = getHijriWithOverride();
   const besokHijri = getTomorrowHijri();
 
-  console.log("Hari ini Hijri:", todayHijri.day);
+  console.log("Hari ini Hijri:", todayHijri);
   console.log("Besok Hijri:", besokHijri);
 
   // MATIKAN SAAT RAMADAN
