@@ -14,25 +14,7 @@ try {
   console.error("Gagal baca hijri_override.json:", err.message);
 }
 
-const getHijriWithOverride = (date = new Date()) => {
-  const gregorian = moment(date).format('YYYY-MM-DD');
-
-  const found = overrides.find(o => o.gregorian === gregorian);
-
-  let day, month, year;
-
-if (found.hijri.includes("-")) {
-  // format: 1-9-1447
-  [day, month, year] = found.hijri.split("-").map(Number);
-} else {
-  // format: 1 Ramadan 1447
-  const parts = found.hijri.split(" ");
-  day = parseInt(parts[0]);
-  month = convertMonthNameToNumber(parts[1]);
-  year = parseInt(parts[2]);
-}
-
-  const convertMonthNameToNumber = (monthName) => {
+const convertMonthNameToNumber = (monthName) => {
   const months = {
     "Muharram": 1,
     "Safar": 2,
@@ -51,7 +33,31 @@ if (found.hijri.includes("-")) {
   return months[monthName] || 0;
 };
 
-  //fallback ke ummalqura
+const getHijriWithOverride = (date = new Date()) => {
+  const gregorian = moment(date).format('YYYY-MM-DD');
+
+  const found = overrides.find(o => o.gregorian === gregorian);
+
+  // kalau data override ADA
+  if (found && found.hijri) {
+
+    let day, month, year;
+
+    if (found.hijri.includes("-")) {
+      // format: 1-9-1447
+      [day, month, year] = found.hijri.split("-").map(Number);
+    } else {
+      // format: 1 Ramadan 1447
+      const parts = found.hijri.split(" ");
+      day = parseInt(parts[0]);
+      month = convertMonthNameToNumber(parts[1]);
+      year = parseInt(parts[2]);
+    }
+
+    return { day, month, year };
+  }
+
+  // fallback kalau tidak ada override
   const m = momentHijri(date);
   return {
     day: m.iDate(),
@@ -109,3 +115,5 @@ module.exports = {
 };
 
 console.log("Override loaded:", overrides.length);
+console.log("Tanggal:", gregorian);
+console.log("Override ketemu:", found);
