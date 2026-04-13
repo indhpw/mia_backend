@@ -187,9 +187,10 @@ cron.schedule('0 7 * * *', async () => {
 
   const today = new Date().getDay();
 
-  const todayHijri = momentHijri.iDate();
-  const besokHijri = momentHijri.clone().add(1, 'day').iDate();
-  const hijriMonth = momentHijri.iMonth();
+  const m = momentHijri();
+  const todayHijri = m.iDate();
+  const besokHijri = m.clone().add(1, 'day').iDate();
+  const hijriMonth = m.iMonth();
 
   // 🚫 MATIKAN SAAT RAMADAN
   if (hijriMonth === 8) {
@@ -237,10 +238,9 @@ cron.schedule('0 7 * * *', async () => {
 async function sendAyyamulBidhReminder(fcmToken) {
   try {
 
-    const todayHijri = momentHijri();
-    const hijriDay = momentHijri().iDate();
-      const besokHijri = momentHijri.clone().add(1, 'day').iDate();
-
+    const m = momentHijri();
+    const hijriDay = m.iDate();
+    const besokHijri = m.clone().add(1, 'day'.iDate);
 
     const message = {
       token: fcmToken,
@@ -272,7 +272,8 @@ async function sendAyyamulBidhReminder(fcmToken) {
 async function sendWeeklyReminder(fcmToken, isTest = false) {
 
   const today = new Date().getDay();
-  const hijriMonth = momentHijri().iMonth();
+  const m = momentHijri();
+  const hijriMonth = m.iMonth();
 
     if (hijriMonth === 8){
     console.log("Ramadhan - semua notif puasa sunnah dimatikan");
