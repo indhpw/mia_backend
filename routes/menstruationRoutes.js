@@ -17,7 +17,10 @@ router.post(
   menstruationController.createMenstruationRecord
 );
 router.get('/records', menstruationController.getMenstruationRecords);
-router.put('/records/:record_id', ...menstruationController.validateUpdateMenstruationRecord, menstruationController.updateMenstruationRecord);
+router.put('/records/:record_id',
+     ...(menstruationController.validateUpdateMenstruationRecord ||[]),
+    menstruationController.updateMenstruationRecord
+);
 router.delete('/records/:record_id', menstruationController.deleteMenstruationRecord);
 router.get('/predict', menstruationController.predictNextCycle);
 router.get('/countdown/:device_id', menstruationController.getNextCycleCountdown);

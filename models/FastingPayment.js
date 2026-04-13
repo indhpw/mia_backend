@@ -26,7 +26,7 @@ module.exports = (sequelize, DataTypes) => {
             }
         },
         device_id: {
-             type: DataTypes.INTEGER, 
+             type: DataTypes.BIGINT, 
              allowNull: false 
         },
         payment_date: {

@@ -1,0 +1,16 @@
+services:
+  - type: web
+    name: mia-backend
+    env: node
+    plan: free
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        sync: false
+        value: production
+      - key: DATABASE_URL
+        sync: false
+      - key: JWT_SECRET
+        generateValue: true
+        previewValue: super-secret-key-for-preview

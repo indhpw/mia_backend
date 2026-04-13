@@ -216,7 +216,7 @@ const createMenstruationRecord = async (req, res, next) => {
         missed_days: ramadanHaulDays,  // jumlah hari haid di Ramadan
         paid_days: 0,
         status: 'belum_lunas',
-        paid_dates: [],
+        paid_dates:  JSON.stringify([]),
         // missed_date dan reason bisa dihilangkan jika tidak dipakai
         created_at: new Date()
       });
@@ -312,7 +312,7 @@ const updateMenstruationRecord = async (req, res, next) => {
         await debt.update({
           missed_days: missedDays,
           paid_days: Math.min(debt.paid_days, missedDays), // jaga agar tidak over-paid
-          status: missedDays === 0 ? 'PAID' : (debt.paid_days >= missedDays ? 'PAID' : 'belum_lunas'),
+          status: missedDays === 0 ? 'PAID' : (debt.paid_days >= missedDays ? 'lunas' : 'belum_lunas'),
           updated_at: new Date()
         });
         console.log(`Updated debt_id ${debt.debt_id} to missed_days=${missedDays}`);
@@ -323,7 +323,7 @@ const updateMenstruationRecord = async (req, res, next) => {
           missed_days: missedDays,
           paid_days: 0,
           status: 'belum_lunas',
-          paid_dates: [],
+          paid_dates: JSON.stringify([]),
           created_at: new Date()
         });
         console.log(`Created debt_id ${debt.debt_id} for ${missedDays} days`);

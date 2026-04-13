@@ -11,7 +11,7 @@ const validatePayment = [
 const validateUpdateDebt = [
     param('debt_id').isInt().withMessage('debt_id must be an integer'),
     body('paid_days').isInt({ min: 0 }).withMessage('paid_days must be a non-negative integer'),
-    body('status').optional().isIn(['lunas', 'belum_lunas']).withMessage('status must be lunas or belum_lunas'),
+body('status').optional().isIn(['lunas', 'belum_lunas']).withMessage('status must be lunas or belum_lunas'),
     body('paid_dates').optional().isArray().withMessage('paid_dates must be an array')
 ];
 
