@@ -187,10 +187,9 @@ cron.schedule('0 7 * * *', async () => {
 
   const today = new Date().getDay();
 
-  const todayHijriMoment = momentHijri();
-  const todayHijri = todayHijriMoment.iDate();
-  const besokHijri = todayHijriMoment.clone().add(1, 'day').iDate();
-  const hijriMonth = todayHijriMoment.iMonth();
+  const todayHijri = momentHijri.iDate();
+  const besokHijri = momentHijri.clone().add(1, 'day').iDate();
+  const hijriMonth = momentHijri.iMonth();
 
   // 🚫 MATIKAN SAAT RAMADAN
   if (hijriMonth === 8) {
@@ -278,12 +277,12 @@ async function sendWeeklyReminder(fcmToken, isTest = false) {
     return;
   }
 
-  if (!isTest && today !== 0 && today !== 3) {
-    return {
-      success: false,
-      message: "besok gaada puasa sunnah"
-    };
-  }
+    if (today !== 0 && today !== 3) {
+      return{
+        success: false,
+        message: " besok gaada puasa sunnah"
+      };
+    }
 
   const targetDay = today === 0 ? "Senin" : "Kamis";
 
