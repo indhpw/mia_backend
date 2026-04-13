@@ -3,15 +3,68 @@ const path = require('path');
 const momentHijri = require('moment-hijri');
 const moment = require('moment');
 
-const getOverride = () => {
-  try {
-    const filePath = path.join(__dirname, '../data/kemenag_hijri.json');
-    const data = fs.readFileSync(filePath, 'utf-8');
-    return JSON.parse(data).overrides;
-  } catch (e) {
-    console.error("Gagal baca hijri_override.json:", e.message);
-    return [];
-  }
+const overridePath = path.join(__dirname, '../data/kemenag_hijri.json');
+
+let overrides = [];
+
+try {
+  const raw = fs.readFileSync(overridePath);
+  overrides = JSON.parse(raw).overrides;
+} catch(err) {
+  console.error("Gagal baca hijri_override.json:", err.message);
+}
+
+const getHijriWithOverride = (date = new Date()) => {
+  const gregorian = moment(date).format('YYYY-MM-DD');
+
+  const found = overrides.find(o => o.gregorian === gregorian);
+
+  let day, month, year;
+
+if (found.hijri.includes("-")) {
+  // format: 1-9-1447
+  [day, month, year] = found.hijri.split("-").map(Number);
+} else {
+  // format: 1 Ramadan 1447
+  const parts = found.hijri.split(" ");
+  day = parseInt(parts[0]);
+  month = convertMonthNameToNumber(parts[1]);
+  year = parseInt(parts[2]);
+}
+
+  const convertMonthNameToNumber = (monthName) => {
+  const months = {
+    "Muharram": 1,
+    "Safar": 2,
+    "Rabiul Awal": 3,
+    "Rabiul Akhir": 4,
+    "Jumadil Awal": 5,
+    "Jumadil Akhir": 6,
+    "Rajab": 7,
+    "Syaban": 8,
+    "Ramadan": 9,
+    "Syawal": 10,
+    "Zulkaidah": 11,
+    "Zulhijjah": 12
+  };
+
+  return months[monthName] || 0;
+};
+
+  //fallback ke ummalqura
+  const m = momentHijri(date);
+  return {
+    day: m.iDate(),
+    month: m.iMonth() + 1,
+    year: m.iYear()
+  };
+};
+
+const getTomorrowHijri = () => {
+  const tomorrow = new Date();
+  tomorrow.setDate(tomorrow.getDate() + 1);
+
+  return getHijriWithOverride(tomorrow);
 };
 
 const convertToHijri = (date) => {
@@ -32,46 +85,19 @@ const convertToHijri = (date) => {
 };
 
 const isRamadan = (gregorianDate) => {
-  const hijri = convertToHijri(gregorianDate);
+  const hijri = getHijriWithOverride(gregorianDate);
   return hijri?.month === 9;
 };
 
 const getHijriDateRange = (startDate, endDate) => {
-  const hijriStart = convertToHijri(startDate);
-  const hijriEnd = endDate ? convertToHijri(endDate) : null;
+  const hijriStart = getHijriWithOverride(startDate);
+  const hijriEnd = endDate ? getHijriWithOverride(endDate) : null;
 
   return {
     hijri_start_date: hijriStart?.formatted || null,
     hijri_end_date: hijriEnd?.formatted || null,
     is_ramadan: isRamadan(startDate),
   };
-};
-
-const getHijriWithOverride = (date = new Date()) => {
-  const overrides = getOverride();
-
-  const gregorian = date.toISOString().split('T')[0];
-
-  const found = overrides.find(o => o.gregorian === gregorian);
-
-  if (found) {
-    const [day, month, year] = found.hijri.split('-').map(Number);
-    return { day, month, year };
-  }
-
-  const m = momentHijri(date);
-  return {
-    day: m.iDate(),
-    month: m.iMonth() + 1,
-    year: m.iYear()
-  };
-};
-
-const getTomorrowHijri = () => {
-  const tomorrow = new Date();
-  tomorrow.setDate(tomorrow.getDate() + 1);
-
-  return getHijriWithOverride(tomorrow);
 };
 
 module.exports = { 
@@ -81,3 +107,5 @@ module.exports = {
   getHijriWithOverride,
   getTomorrowHijri,
 };
+
+console.log("Override loaded:", overrides.length);
