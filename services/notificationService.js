@@ -281,33 +281,40 @@ async function sendWeeklyReminder(fcmToken, isTest = false) {
   const m = momentHijri();
   const hijriMonth = m.iMonth();
 
-    if (!isTest && hijriMonth === 9){
+  // 🚫 Kalau REAL (bukan test)
+  if (!isTest) {
+
+    if (hijriMonth === 9){
       return {
         success: false,
         message: "Ramadan - notifikasi dimatikan"
-      }
-  };
-
-    if (!isTest && today !== 0 && today !== 3) {
-      return{
-        success: false,
-        message: " besok gaada puasa sunnah"
       };
     }
 
+    if (today !== 0 && today !== 3) {
+      return {
+        success: false,
+        message: "Besok bukan Senin/Kamis"
+      };
+    }
+  }
+
+  // ✅ Kalau lolos / mode test
   const targetDay = today === 0 ? "Senin" : "Kamis";
 
   await messaging.send({
     token: fcmToken,
     data: {
       title: "Pengingat Puasa Senin Kamis",
-      body: `Besok hari ${targetDay} dan kamu masih ada utang puasa. Apakah mau membayar utang puasa besok?`,
+      body: `Besok hari ${targetDay} dan kamu masih ada utang puasa.`,
       type: 'weekly'
     }
   });
 
   return { success: true };
 }
+console.log("TODAY:", today);
+console.log("IS TEST:", isTest);
 
 async function sendCycleReminder(fcmToken, startDate) {
     return {
