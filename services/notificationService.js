@@ -281,7 +281,10 @@ async function sendWeeklyReminder(fcmToken, isTest = false) {
   const m = momentHijri();
   const hijriMonth = m.iMonth();
 
-  // 🚫 Kalau REAL (bukan test)
+  console.log("TODAY:", today);
+  console.log("IS TEST:", isTest);
+
+  //  Kalau REAL (bukan test)
   if (!isTest) {
 
     if (hijriMonth === 9){
@@ -299,7 +302,7 @@ async function sendWeeklyReminder(fcmToken, isTest = false) {
     }
   }
 
-  // ✅ Kalau lolos / mode test
+  // Kalau lolos / mode test
   const targetDay = today === 0 ? "Senin" : "Kamis";
 
   await messaging.send({
@@ -313,8 +316,7 @@ async function sendWeeklyReminder(fcmToken, isTest = false) {
 
   return { success: true };
 }
-console.log("TODAY:", today);
-console.log("IS TEST:", isTest);
+
 
 async function sendCycleReminder(fcmToken, startDate) {
     return {
