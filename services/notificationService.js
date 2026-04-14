@@ -276,7 +276,7 @@ async function sendWeeklyReminder(fcmToken, isTest = false) {
   const m = momentHijri();
   const hijriMonth = m.iMonth();
 
-    if (hijriMonth === 8){
+    if (hijriMonth === 9){
       return {
         success: false,
         message: "Ramadan - notifikasi dimatikan"

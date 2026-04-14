@@ -42,23 +42,13 @@ console.log("Tanggal:", gregorian);
 console.log("Override ketemu:", found);
 
   // kalau data override ADA
-  if (found && found.hijri) {
-
-    let day, month, year;
-
-    if (found.hijri.includes("-")) {
-      // format: 1-9-1447
-      [day, month, year] = found.hijri.split("-").map(Number);
-    } else {
-      // format: 1 Ramadan 1447
-      const parts = found.hijri.split(" ");
-      day = parseInt(parts[0]);
-      month = convertMonthNameToNumber(parts[1]);
-      year = parseInt(parts[2]);
-    }
-
-    return { day, month, year };
-  }
+if (found) {
+  return {
+    day: found.hijri_day,
+    month: found.hijri_month,
+    year: found.hijri_year
+  };
+}
 
   // fallback kalau tidak ada override
   const m = momentHijri(date);
@@ -117,4 +107,5 @@ module.exports = {
   getTomorrowHijri,
 };
 
-console.log("Override loaded:", overrides.length);
+console.log("Hari ini Hijri:", getHijriWithOverride());
+console.log("Besok Hijri:", getTomorrowHijri());
