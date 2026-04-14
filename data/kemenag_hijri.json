@@ -5,6 +5,80 @@
       "hijri_day": 1,
       "hijri_month": 10,
       "hijri_year": 1447
+    },
+        {
+      "gregorian": "2026-04-19",
+      "hijri_day": 1,
+      "hijri_month": 11,
+      "hijri_year": 1447
+    },    {
+      "gregorian": "2026-05-18",
+      "hijri_day": 1,
+      "hijri_month": 12,
+      "hijri_year": 1447
+    },    {
+      "gregorian": "2026-06-17",
+      "hijri_day": 1,
+      "hijri_month": 1,
+      "hijri_year": 1448
+    },    {
+      "gregorian": "2026-07-16",
+      "hijri_day": 1,
+      "hijri_month": 2,
+      "hijri_year": 1448
+    },    {
+      "gregorian": "2026-08-14",
+      "hijri_day": 1,
+      "hijri_month": 3,
+      "hijri_year": 1448
+    },    {
+      "gregorian": "2026-09-13",
+      "hijri_day": 1,
+      "hijri_month": 4,
+      "hijri_year": 1448
+    },
+        {
+      "gregorian": "2026-10-12",
+      "hijri_day": 1,
+      "hijri_month": 5,
+      "hijri_year": 1448
+    },    {
+      "gregorian": "2026-11-11",
+      "hijri_day": 1,
+      "hijri_month": 6,
+      "hijri_year": 1448
+    },    {
+      "gregorian": "2026-12-11",
+      "hijri_day": 1,
+      "hijri_month": 7,
+      "hijri_year": 1448
+    },    {
+      "gregorian": "2027-01-09",
+      "hijri_day": 1,
+      "hijri_month": 8,
+      "hijri_year": 1448
+    },
+    {
+      "gregorian": "2027-02-08",
+      "hijri_day": 1,
+      "hijri_month": 9,
+      "hijri_year": 1448
+    },    {
+      "gregorian": "2027-03-10",
+      "hijri_day": 1,
+      "hijri_month": 10,
+      "hijri_year": 1448
+    },    {
+      "gregorian": "2027-04-09",
+      "hijri_day": 1,
+      "hijri_month": 11,
+      "hijri_year": 1448
+    },
+        {
+      "gregorian": "2027-05-08",
+      "hijri_day": 1,
+      "hijri_month": 11,
+      "hijri_year": 1448
     }
   ]
 }
