@@ -42,7 +42,7 @@ console.log("Tanggal:", gregorian);
 console.log("Override ketemu:", found);
 
   // kalau data override ADA
-if (found) {
+if (found && found.hijri_day) {
   return {
     day: found.hijri_day,
     month: found.hijri_month,
