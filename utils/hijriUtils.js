@@ -38,7 +38,7 @@ const getHijriWithOverride = (date = new Date()) => {
 
   const found = overrides.find(o => o.gregorian === gregorian);
 
-onsole.log("Tanggal:", gregorian);
+console.log("Tanggal:", gregorian);
 console.log("Override ketemu:", found);
 
   // kalau data override ADA
