@@ -9,7 +9,6 @@ const MenstruationRecord = db. MenstruationRecord;
 exports.createFastingDebt = [
     body('record_id').optional().isInt().withMessage('Record ID must be an integer'),
     body('missed_days').isInt({ min: 1 }).withMessage('Missed days must be a positive integer'),
-    body('debt_date').isISO8601().withMessage('Debt date must be a valid date'),
     async (req, res) => {
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
@@ -17,7 +16,7 @@ exports.createFastingDebt = [
             return res.status(400).json({ errors: errors.array() });
         }
         try {
-            const { device_id, record_id, missed_days, debt_date } = req.body;
+            const { device_id, record_id, missed_days } = req.body;
 
             if (record_id) {
                 const record = await MenstruationRecord.findOne({
@@ -25,9 +24,6 @@ exports.createFastingDebt = [
                 });
                 if (!record) {
                     return res.status(404).json({ error: 'Menstruation record not found' });
-                }
-                if (new Date(debt_date) < new Date(record.start_date) || new Date(debt_date) > new Date(record.end_date)) {
-                    return res.status(400).json({ error: 'Debt date must fall within menstruation period' });
                 }
             }
 
@@ -38,7 +34,7 @@ exports.createFastingDebt = [
                 paid_days: 0,
                 status: 'belum_lunas',
                 paid_dates: JSON.stringify([]),
-                created_at: debt_date
+                created_at: new Date()
             });
             console.log('Fasting debt created:', debt.toJSON());
             res.status(201).json(debt);
