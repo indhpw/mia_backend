@@ -7,7 +7,6 @@ const {
     sendAyyamulBidhReminder, 
     sendCycleReminder, 
     sendPaymentConfirmation,
-    sendTestNotification 
 } = require('../services/notificationService'); 
 const { Device } = require('../models');  // Import model Device
 
@@ -22,7 +21,7 @@ router.post('/test-weekly', async (req, res) => {
             return res.status(400).json({ error: 'fcmToken diperlukan' });
         }
 
-        const result = await sendWeeklyReminder(fcmToken, true); // mode test
+        const result = await sendWeeklyReminder(fcmToken, false); 
 
         res.status(200).json(result);
 
@@ -102,28 +101,18 @@ router.post('/save-token', async (req, res) => {
 
 router.post('/test', async (req, res) => {
 
-  try {
+  const { fcmToken } = req.body;
 
-    const { fcmToken } = req.body;
-
-    if (!fcmToken) {
-      return res.status(400).json({
-        error: 'fcmToken diperlukan'
-      });
-    }
-
-    const result = await sendTestNotification(fcmToken);
-
-    res.json(result);
-
-  } catch (error) {
-
-    console.error(error);
-
-    res.status(500).json({
-      error: error.message
+  if (!fcmToken) {
+    return res.status(400).json({
+      error: "fcmToken wajib diisi"
     });
   }
+
+const { sendTestNotification } = require('../services/notificationService');
+const result = await sendTestNotification(fcmToken);
+
+  res.json(result);
 
 });
 
