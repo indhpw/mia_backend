@@ -237,17 +237,24 @@ cron.schedule('0 7 * * *', async () => {
 });
 
 
-async function sendAyyamulBidhReminder(fcmToken) {
+async function sendAyyamulBidhReminder(fcmToken, isTest = false) {
   try {
 
     const besokHijri = getTomorrowHijri();
-    const todayHijri = getHijriWithOverride();
+
+    // VALIDASI
+    if (!isTest && (besokHijri.day < 13 || besokHijri.day > 15)) {
+      return {
+        success: false,
+        message: "Besok bukan Ayyamul Bidh"
+      };
+    }
 
     const message = {
       token: fcmToken,
       data: {
         title: "Pengingat Ayyamul Bidh",
-        body: `Besok ${besokHijri.day} bulan Hijriah dan kamu masih ada utang puasa. Apakah mau membayar utang puasa besok?`,
+        body: `Besok ${besokHijri.day} bulan Hijriah dan kamu masih ada utang puasa.`,
         type: 'ayyamul_bidh'
       }      
     };
