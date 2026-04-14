@@ -108,11 +108,9 @@ const sendBulkNotification = async (users, title, bodyGenerator) => {
 
     const message = {
       tokens: tokens,
-      notification: {
-        title: title,
-        body: bodyGenerator(users[0]) // body contoh
-      },
       data: {
+        title: title,
+        body: bodyGenerator(users[0]),
         type: 'reminder_hutang_puasa'
       }
     };
@@ -208,9 +206,10 @@ cron.schedule('0 7 * * *', async () => {
     for (const user of users) {
       await messaging.send({
         token: user.fcm_token,
-        notification: {
+        data: {
           title: 'Pengingat Ayyamul Bidh',
-          body: `Besok tanggal ${besokHijri.day} bulan Hijriah. Kamu masih punya utang puasa, mau sekalian dibayar?`
+          body: `Besok tanggal ${besokHijri.day} bulan Hijriah. Kamu masih punya utang puasa, mau sekalian dibayar?`,
+          type: "ayyamul_bidh"
         }
       });
     }
@@ -224,9 +223,10 @@ cron.schedule('0 7 * * *', async () => {
     for (const user of users) {
       await messaging.send({
         token: user.fcm_token,
-        notification: {
+        data: {
           title: 'Pengingat Puasa Sunnah',
-          body: `Besok hari ${targetDay}. Kamu masih punya utang puasa, mau dibayar?`
+          body: `Besok hari ${targetDay}. Kamu masih punya utang puasa, mau dibayar?`,
+          type: "weekly"
         }
       });
     }
@@ -245,13 +245,11 @@ async function sendAyyamulBidhReminder(fcmToken) {
 
     const message = {
       token: fcmToken,
-      notification: {
-        title: "Pengingat Ayyamul Bidh",
-        body: `Besok ${besokHijri.day} bulan Hijriah dan kamu masih ada utang puasa. Apakah mau membayar utang puasa besok?`
-      },
       data: {
-        type: "ayyamul_bidh"
-      }
+        title: "Pengingat Ayyamul Bidh",
+        body: `Besok ${besokHijri.day} bulan Hijriah dan kamu masih ada utang puasa. Apakah mau membayar utang puasa besok?`,
+        type: 'ayyamul_bidh'
+      }      
     };
 
     await messaging.send(message);
@@ -294,9 +292,10 @@ async function sendWeeklyReminder(fcmToken, isTest = false) {
 
   await messaging.send({
     token: fcmToken,
-    notification: {
-      title: "Pengingat Puasa Sunnah",
-      body: `Besok hari ${targetDay} dan kamu masih ada utang puasa. Apakah mau membayar utang puasa besok?`
+    data: {
+      title: "Pengingat Puasa Senin Kamis",
+      body: `Besok hari ${targetDay} dan kamu masih ada utang puasa. Apakah mau membayar utang puasa besok?`,
+      type: 'weekly'
     }
   });
 
