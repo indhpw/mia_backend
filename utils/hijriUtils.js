@@ -34,23 +34,33 @@ const convertMonthNameToNumber = (monthName) => {
 };
 
 const getHijriWithOverride = (date = new Date()) => {
-  const gregorian = moment(date).format('YYYY-MM-DD');
+  const target = moment(date);
 
-  const found = overrides.find(o => o.gregorian === gregorian);
+  // cari override TERDEKAT sebelumnya
+  const sorted = overrides.sort(
+    (a, b) => new Date(a.gregorian) - new Date(b.gregorian)
+  );
 
-console.log("Tanggal:", gregorian);
-console.log("Override ketemu:", found);
+  let anchor = null;
 
-  // kalau data override ADA
-if (found && found.hijri_day) {
-  return {
-    day: found.hijri_day,
-    month: found.hijri_month,
-    year: found.hijri_year
-  };
-}
+  for (const o of sorted) {
+    if (moment(o.gregorian).isSameOrBefore(target)) {
+      anchor = o;
+    }
+  }
 
-  // fallback kalau tidak ada override
+  if (anchor) {
+    const anchorDate = moment(anchor.gregorian);
+    const diffDays = target.diff(anchorDate, 'days');
+
+    return {
+      day: anchor.hijri_day + diffDays,
+      month: anchor.hijri_month,
+      year: anchor.hijri_year
+    };
+  }
+
+  // fallback kalau tidak ada anchor sama sekali
   const m = momentHijri(date);
   return {
     day: m.iDate(),
