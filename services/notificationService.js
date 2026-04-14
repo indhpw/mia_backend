@@ -224,7 +224,7 @@ cron.schedule('0 7 * * *', async () => {
       await messaging.send({
         token: user.fcm_token,
         data: {
-          title: 'Pengingat Puasa Sunnah',
+          title: 'Pengingat Puasa Senin Kamis',
           body: `Besok hari ${targetDay}. Kamu masih punya utang puasa, mau dibayar?`,
           type: "weekly"
         }
@@ -279,7 +279,7 @@ async function sendWeeklyReminder(fcmToken, isTest = false) {
 
   const today = new Date().getDay();
   const m = momentHijri();
-  const hijriMonth = m.iMonth();
+  const hijriMonth = m.iMonth() + 1;
 
   console.log("TODAY:", today);
   console.log("IS TEST:", isTest);
