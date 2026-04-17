@@ -15,12 +15,14 @@ const validate = (req, res, next) => {
     next();
 };
 
+//  VALIDASI PAYMENT (FIX)
 const validatePayment = [
-    body('debt_id').isInt(),
-    body('payment_date').isISO8601(),
-    body('amount').isInt({ min: 1 }),
+    param('debt_id').isInt().withMessage('debt_id must be integer'),
+    body('payment_date').isISO8601().withMessage('Invalid date'),
+    body('amount').isInt({ min: 1 }).withMessage('amount must be positive')
 ];
 
+// VALIDASI PARAM
 const validateDebtId = [
     param('debt_id').isInt().withMessage('debt_id must be integer'),
 ];
@@ -29,60 +31,52 @@ const validateDeviceId = [
     param('device_id').isInt().withMessage('device_id must be integer'),
 ];
 
+//  UPDATE DEBT (SUDAH TANPA paid_days & paid_dates)
 const validateDebtUpdate = [
     param('debt_id').isInt(),
-    body('paid_days').optional().isInt(),
-    body('status').optional().isIn(['lunas', 'belum_lunas']),
-    body('paid_dates').optional().isArray(),
+    body('status').optional().isIn(['lunas', 'belum_lunas'])
 ];
 
 // ================= ROUTES =================
 
-// 🔹 GET debt by ID
+//  GET debt by ID
 router.get('/debts/:debt_id', 
     validateDebtId,
     validate,
     fastingController.getFastingDebtById
 );
 
-// 🔹 GET debts by device
+//  GET debts by device (FIX: pakai params)
 router.get('/debts/device/:device_id',
     validateDeviceId,
     validate,
     fastingController.getFastingDebts
 );
 
-// 🔹 CREATE debt
+//  CREATE debt
 router.post('/debts',
     fastingController.createFastingDebt
 );
 
-// 🔹 UPDATE debt
+//  UPDATE debt (FIX)
 router.put('/debts/:debt_id',
     validateDebtUpdate,
     validate,
     fastingController.updateFastingDebt
 );
 
-// 🔹 PAY debt
+//  PAY debt (RECOMMENDED)
 router.post('/debts/:debt_id/pay',
     validatePayment,
     validate,
     fastingController.createFastingPayment
 );
 
-// 🔹 GET payments
+//  GET payments
 router.get('/payments/:device_id',
     validateDeviceId,
     validate,
     fastingController.getPayments
-);
-
-// 🔹 CREATE payment (optional)
-router.post('/payments',
-    validatePayment,
-    validate,
-    fastingController.createFastingPayment
 );
 
 module.exports = router;

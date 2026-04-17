@@ -1,9 +1,10 @@
 const { body, validationResult } = require('express-validator');
-const { Op } = require('sequelize');
+const { Op, where } = require('sequelize');
 const models = require('../models');
 const FastingDebt = models.FastingDebt;
 const MenstruationRecord = models.MenstruationRecord;
-const Device = models.Device
+const Device = models.Device;
+const FastingPayment = models.FastingPayment;
 const moment = require('moment');
 const momentHijri = require('moment-hijri');
 
@@ -175,7 +176,9 @@ const createMenstruationRecord = async (req, res, next) => {
     // Convert to Hijri and check Ramadan
     const hijri_start_date = convertToHijri(start_date);
     const hijri_end_date = end_date ? convertToHijri(end_date) : convertToHijri(start_date);
-    const is_ramadan = isRamadan(start_date) || isRamadan(end_date);
+    const is_ramadan = endMoment 
+      ? calculateMissedDaysInRamadan(startMoment, endMoment) > 0
+      : isRamadan(start_date);
 
     // Get device_record_number
     const device_record_number = await getNextDeviceRecordNumber(device_id);
@@ -213,11 +216,8 @@ const createMenstruationRecord = async (req, res, next) => {
       await FastingDebt.create({
         device_id,
         record_id: record.record_id,
-        missed_days: ramadanHaulDays,  // jumlah hari haid di Ramadan
-        paid_days: 0,
+        missed_days: ramadanHaulDays,  
         status: 'belum_lunas',
-        paid_dates:  JSON.stringify([]),
-        // missed_date dan reason bisa dihilangkan jika tidak dipakai
         created_at: new Date()
       });
 
@@ -290,8 +290,6 @@ const updateMenstruationRecord = async (req, res, next) => {
     if (period_length !== undefined) updateData.period_length = period_length;
     if (cycle_length !== undefined) updateData.cycle_length = cycle_length;
 
-    await record.update(updateData);
-
     // Update debt jika ada perubahan end_date dan is_ramadan
     if (end_date !== undefined) {
       updateData.end_date = endMoment? endMoment.format('YYYY-MM-DD') : null;
@@ -309,10 +307,17 @@ const updateMenstruationRecord = async (req, res, next) => {
       let debt = await FastingDebt.findOne({ where: { record_id: record.record_id } });
 
       if (debt) {
+        const totalPaid = await createFastingPayment.sum('amount', {
+          where: { debt_id: debt.debt_id }
+        }) || 0 ;
+        let newStatus = 'belum_lunas';
+
+        if (totalPaid >= missedDays && missedDays > 0) {
+          newStatus = 'lunas';
+        }
         await debt.update({
           missed_days: missedDays,
-          paid_days: Math.min(debt.paid_days, missedDays), // jaga agar tidak over-paid
-          status: missedDays === 0 ? 'PAID' : (debt.paid_days >= missedDays ? 'lunas' : 'belum_lunas'),
+          status: missedDays === 0 ? 'tidak_ada_hutang' : newStatus,
           updated_at: new Date()
         });
         console.log(`Updated debt_id ${debt.debt_id} to missed_days=${missedDays}`);
@@ -321,9 +326,7 @@ const updateMenstruationRecord = async (req, res, next) => {
           device_id: record.device_id,
           record_id: record.record_id,
           missed_days: missedDays,
-          paid_days: 0,
           status: 'belum_lunas',
-          paid_dates: JSON.stringify([]),
           created_at: new Date()
         });
         console.log(`Created debt_id ${debt.debt_id} for ${missedDays} days`);
@@ -331,8 +334,13 @@ const updateMenstruationRecord = async (req, res, next) => {
             console.log(`No debt needed for record_id ${record.record_id} (missedDays=0)`);
       }
     } else{
-       await FastingDebt.destroy({ where: { record_id: record.record_id } });
-  console.log(`Deleted debt for record_id ${record.record_id} (no longer Ramadan)`);
+      if (!updateData.is_ramadan) {
+        await FastingDebt.update(
+          { status: 'tidak_berlaku' },
+          { where : { record_id: record.record_id}}
+        );
+      }
+  console.log(`Debt dinonaktifkan untuk record_id ${record.record_id}`);
     }
 
     res.status(200).json(record.toJSON());

@@ -34,7 +34,7 @@ exports.createFastingDebt = [
             console.log("MODE:", hijriMonth === 8 ? "RAMADAN" : "NON-RAMADAN");
 
             //kalo Ramadan
-            if (hijriMonth === 8) {
+            if (isRamadan) {
 
                 if (!record_id) {
                     return res.status(404).json({
@@ -69,9 +69,7 @@ exports.createFastingDebt = [
                 device_id,
                 record_id: record_id || null,
                 missed_days,
-                paid_days: 0,
                 status: 'belum_lunas',
-                paid_dates: JSON.stringify([]),
                 created_at: new Date()
             });
             console.log('Fasting debt created:', debt.toJSON());
@@ -103,6 +101,19 @@ exports.createFastingPayment = async (req, res) => {
             amount
         });
 
+        // hitung total payment
+        const totalPaid = await FastingPayment.sum('amount', {
+            where: { debt_id }
+        });
+
+        if (totalPaid >= debt.missed_days) {
+            debt.status = 'lunas';
+        } else {
+            debt.status = 'belum_lunas';
+        }
+
+        await debt.save();
+
         res.status(201).json(payment);
     } catch (error) {
         console.error('FULL ERROR:', error);
@@ -133,13 +144,8 @@ exports.getFastingDebts = async (req, res) => {
                 { model: MenstruationRecord, as: 'menstruationRecord' }
             ]
         });
-        const normalizedDebts = debts.map(debt => ({
-            ...debt.toJSON(),
-            paid_dates: Array.isArray(debt.paid_dates)
-                ? debt.paid_dates
-                : JSON.parse(debt.paid_dates || '[]')
-        }));
-        res.status(200).json(normalizedDebts);
+
+        res.status(200).json(debts);
     } catch (error) {
         console.error('Error fetching fasting debts:', error.stack);
         res.status(500).json({ error: 'Internal server error', details: error.message });
@@ -149,16 +155,14 @@ exports.getFastingDebts = async (req, res) => {
 exports.updateFastingDebt = async (req, res) => {
     try {
         const { debt_id } = req.params;
-        const { paid_days, status, paid_dates } = req.body;
+        const { status } = req.body;
 
         const debt = await FastingDebt.findByPk(debt_id);
         if (!debt) {
             return res.status(404).json({ error: 'Debt not found' });
         }
 
-        if (paid_days !== undefined) debt.paid_days = paid_days;
         if (status !== undefined) debt.status = status;
-        if (paid_dates !== undefined) debt.paid_dates = JSON.stringify(paid_dates);
 
         await debt.save();
 
