@@ -4,7 +4,7 @@ const admin = require('firebase-admin');
 const cron = require('node-cron');
 const momentHijri = require('moment-hijri');
 const { Sequelize, Op } = require('sequelize');
-const { Device, FastingDebt, sequelize } = require('../models');
+const { Device, FastingDebt, FastingPayment } = require('../models');
 const { getTomorrowHijri, getHijriWithOverride } = require('../utils/hijriUtils');
 require('dotenv').config();
 
@@ -54,21 +54,6 @@ const getUsersWithHutang = async () => {
   ]
 });
 
-    //total pembayaran dari fasting_payments
-    const payments = await FastingPayment.findAll({
-      attributes: [
-        'device_id',
-        [Sequelize.fn('SUM', Sequelize.col('amount')), 'totalPaid']
-      ],
-      group: ['device_id']
-    });
-
-    //mapping payment
-    const paymentMap = new Map();
-    payments.forEach(p => {
-      paymentMap.set(p.device_id, Number(p.get('totalPaid') || 0));
-    });
-
     // ambil semua device yang memiliki FCM token
     const devices = await Device.findAll({
       where: {
@@ -82,27 +67,28 @@ const getUsersWithHutang = async () => {
       deviceMap.set(d.device_id, d.fcm_token);
     });
 
-    const result = [];
+const userMap = new Map();
 
-    for (const debt of debts) {
+for (const debt of debts) {
 
-      const missed = Number(debt.get('totalMissed') || 0);
-      const paid = paymentMap.get(debt.device_id) || 0;
+  const totalPaid = debt.payments.reduce((sum, p) => sum + (p.amount || 0), 0);
+  const hutang = debt.missed_days - totalPaid;
 
-const hutang = debt.missed_days - 
-  debt.payments.reduce((sum, p) => sum + p.amount, 0);
+  if (hutang > 0 && deviceMap.has(debt.device_id)) {
 
-  
-      if (hutang > 0 && deviceMap.has(debt.device_id)) {
-        result.push({
-          device_id: debt.device_id,
-          fcm_token: deviceMap.get(debt.device_id),
-          hutang
-        });
-      }
+    if (!userMap.has(debt.device_id)) {
+      userMap.set(debt.device_id, {
+        device_id: debt.device_id,
+        fcm_token: deviceMap.get(debt.device_id),
+        hutang: 0
+      });
     }
 
-    return result;
+    userMap.get(debt.device_id).hutang += hutang;
+  }
+}
+
+return Array.from(userMap.values());
 
   } catch (error) {
     console.error('Error fetching usersh with hutang:', error.stack);
@@ -211,7 +197,7 @@ cron.schedule('0 7 * * *', async () => {
   console.log("Besok Hijri:", besokHijri);
 
   // MATIKAN SAAT RAMADAN
-  if (todayHijri.month === 8) {
+  if (todayHijri.month === 9) {
     console.log("Ramadhan - semua notif puasa sunnah dimatikan");
     return;
   }
@@ -321,10 +307,9 @@ async function sendWeeklyReminder(fcmToken, isTest = false) {
     }
   }
 
-  let targetDay = "";
+  let targetDay = "Puasa Sunnah";
   if (today === 0) targetDay = "Senin";
-  if (today === 3) targetDay = "Kamis";
-  else targetDay = "Puasa Sunnah";
+  else if (today === 3) targetDay = "Kamis";
 
 
   await messaging.send({
