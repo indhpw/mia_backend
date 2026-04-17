@@ -19,15 +19,22 @@ exports.createFastingDebt = [
         try {
             const { device_id, record_id, missed_days } = req.body;
 
-            //cek apakah Ramadan
+            //test saat ramadan
+            const isTestRamadan = true;
             const m = momentHijri();
-            const hijriMonth = m.iMonth();  //dari 0, Ramadan di 8
+            const hijriMonth = isTestRamadan ? 8 : m.iMonth();
+
+            // //cek apakah Ramadan
+            // const m = momentHijri();
+            // const hijriMonth = m.iMonth();  //dari 0, Ramadan di 8
+
+            const isRamadan = hijriMonth === 8;
 
             console.log("HIJRI MONTH: ", hijriMonth);
             console.log("MODE:", hijriMonth === 8 ? "RAMADAN" : "NON-RAMADAN");
 
             //kalo Ramadan
-            if (hijriMonth = 8) {
+            if (hijriMonth === 8) {
 
                 if (!record_id) {
                     return res.status(404).json({
@@ -91,7 +98,7 @@ exports.createFastingPayment = async (req, res) => {
 
         const payment = await FastingPayment.create({
             debt_id,
-            device_id: debt.device_id, // ✅ ambil dari debt
+            device_id: debt.device_id, 
             payment_date,
             amount
         });
