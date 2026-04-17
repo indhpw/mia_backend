@@ -1,5 +1,5 @@
 const { body, param, validationResult } = require('express-validator');
-const { Op } = require('sequelize');
+const { Op, where } = require('sequelize');
 const db = require('../models');
 const { messaging } = require('firebase-admin');
 const FastingDebt = db.FastingDebt;
@@ -18,15 +18,44 @@ exports.createFastingDebt = [
         try {
             const { device_id, record_id, missed_days } = req.body;
 
+            //cek apakah Ramadan
+            const m = momentHijri();
+            const hijriMonth = m.iMonth();  //dari 0, Ramadan di 8
+
+            console.log("HIJRI MONTH: ", hijriMonth);
+
+            //kalo Ramadan
+            if (hijriMonth = 8) {
+
+                if (!record_id) {
+                    return res.status(404).json({
+                        error: "Saat Ramadan, hutang puasa harus berasal dari data menstruasi"
+                    });
+                }
+
+                const record = await MenstruationRecord.findOne({
+                    where: {record_id, device_id }
+                });
+
+                if (!record) {
+                    return res.status(404).json({
+                        error: 'Menstruation record not found'
+                    })
+                }
+            }
+            else {
             if (record_id) {
                 const record = await MenstruationRecord.findOne({
                     where: { record_id, device_id }
                 });
                 if (!record) {
-                    return res.status(404).json({ error: 'Menstruation record not found' });
+                    return res.status(404).json({ 
+                    error: 'Menstruation record not found' });
+                    }
                 }
             }
 
+            //create debt
             const debt = await FastingDebt.create({
                 device_id,
                 record_id: record_id || null,
@@ -42,6 +71,7 @@ exports.createFastingDebt = [
 console.error('FULL ERROR:', error);
 console.error('SQL MESSAGE:', error.parent?.sqlMessage);
 console.error('SQL:', error.parent?.sql);
+console.log("MODE:", hijriMonth === 8 ? "RAMADAN" : "NON-RAMADAN");
             res.status(500).json({ error: 'Internal server error', details: error.message });
         }
     }
