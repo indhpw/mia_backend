@@ -5,6 +5,7 @@ const { messaging } = require('firebase-admin');
 const FastingDebt = db.FastingDebt;
 const FastingPayment = db.FastingPayment;
 const MenstruationRecord = db. MenstruationRecord;
+const momentHijri = require('moment-hijri');
 
 exports.createFastingDebt = [
     body('record_id').optional().isInt().withMessage('Record ID must be an integer'),
@@ -23,6 +24,7 @@ exports.createFastingDebt = [
             const hijriMonth = m.iMonth();  //dari 0, Ramadan di 8
 
             console.log("HIJRI MONTH: ", hijriMonth);
+            console.log("MODE:", hijriMonth === 8 ? "RAMADAN" : "NON-RAMADAN");
 
             //kalo Ramadan
             if (hijriMonth = 8) {
@@ -71,7 +73,6 @@ exports.createFastingDebt = [
 console.error('FULL ERROR:', error);
 console.error('SQL MESSAGE:', error.parent?.sqlMessage);
 console.error('SQL:', error.parent?.sql);
-console.log("MODE:", hijriMonth === 8 ? "RAMADAN" : "NON-RAMADAN");
             res.status(500).json({ error: 'Internal server error', details: error.message });
         }
     }
