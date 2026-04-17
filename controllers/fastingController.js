@@ -19,14 +19,14 @@ exports.createFastingDebt = [
         try {
             const { device_id, record_id, missed_days } = req.body;
 
-            //test saat ramadan
-            const isTestRamadan = true;
-            const m = momentHijri();
-            const hijriMonth = isTestRamadan ? 8 : m.iMonth();
-
-            // //cek apakah Ramadan
+            // //test saat ramadan
+            // const isTestRamadan = true;
             // const m = momentHijri();
-            // const hijriMonth = m.iMonth();  //dari 0, Ramadan di 8
+            // const hijriMonth = isTestRamadan ? 8 : m.iMonth();
+
+            //cek apakah Ramadan
+            const m = momentHijri();
+            const hijriMonth = m.iMonth();  //dari 0, Ramadan di 8
 
             const isRamadan = hijriMonth === 8;
 
