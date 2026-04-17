@@ -14,7 +14,7 @@ module.exports = (sequelize, DataTypes) => {
             });
             FastingDebt.belongsTo(models.Device, {
                 foreignKey: 'device_id',
-                as: 'devices'
+                as: 'device'
             });
         }
     }
@@ -50,35 +50,19 @@ module.exports = (sequelize, DataTypes) => {
             allowNull: false,
             defaultValue: 0
         },
-        paid_days: {
-            type: DataTypes.INTEGER,
-            allowNull: false,
-            defaultValue: 0
-        },
         status: {
-            type: DataTypes.ENUM('lunas', 'belum_lunas'),
+            type: DataTypes.ENUM('lunas', 'belum_lunas', 'tidak_berlaku'),
             allowNull: false,
             defaultValue: 'belum_lunas'
         },
-        paid_dates: {
-        type: DataTypes.TEXT, 
-        get() {
-        const rawValue = this.getDataValue('paid_dates');
-        try {
-            return JSON.parse(rawValue || '[]');
-        } catch {
-            return [];
-        }
-        },
-        set(val) {
-            this.setDataValue('paid_dates', JSON.stringify(val || []));
-        }
-        },
-        
         created_at: {
             type: DataTypes.DATE,
             allowNull: false,
             defaultValue: DataTypes.NOW
+        },
+        updated_at: {
+            type: DataTypes.DATE,
+            allowNull: true
         }
     }, {
         sequelize,
