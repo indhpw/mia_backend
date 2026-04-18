@@ -63,6 +63,12 @@ module.exports = (sequelize, DataTypes) => {
         updated_at: {
             type: DataTypes.DATE,
             allowNull: true
+        },
+        remaining_days: {
+            type: DataTypes.VIRTUAL,
+            get() {
+                return this.missed_days - (this.total_paid || 0);
+            }
         }
     }, {
         sequelize,

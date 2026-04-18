@@ -117,11 +117,11 @@ exports.createFastingPayment = async (req, res) => {
 
         //sisa hutang
         const remaining = Math.max(0, debt.missed_days - totalPaid);
-        
-        res.status(201).json({
-            payment,
+
+        res.json({
+            missed_days: debt.missed_days,
             total_paid: totalPaid,
-            remaining_days: remaining,
+            remaining_days: Math.max(0, remaining),
             status: debt.status
         });
         
