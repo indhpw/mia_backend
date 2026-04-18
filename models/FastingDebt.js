@@ -68,7 +68,9 @@ module.exports = (sequelize, DataTypes) => {
         sequelize,
         modelName: 'FastingDebt',
         tableName: 'fasting_debts',
-        timestamps: false
+        timestamps: true,
+        createdAt: 'created_at',
+        updatedAt: 'updated_at'
     });
 
     return FastingDebt;

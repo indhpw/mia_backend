@@ -26,9 +26,9 @@ exports.createFastingDebt = [
 
             //cek apakah Ramadan
             const m = momentHijri();
-            const hijriMonth = m.iMonth();  //dari 0, Ramadan di 8
+            const hijriMonth = m.iMonth() + 1;  //dari 0, Ramadan di 8
 
-            const isRamadan = hijriMonth === 8;
+            const isRamadan = hijriMonth === 9;
 
             console.log("HIJRI MONTH: ", hijriMonth);
             console.log("MODE:", hijriMonth === 8 ? "RAMADAN" : "NON-RAMADAN");
@@ -85,17 +85,17 @@ console.error('SQL:', error.parent?.sql);
 
 exports.createFastingPayment = async (req, res) => {
     try {
-        const { debt_id } = req.params;
+        const debtId = parseInt(req.params.debt_id);
         const { payment_date, amount } = req.body;
 
-        const debt = await FastingDebt.findByPk(debt_id);
+        const debt = await FastingDebt.findByPk(debtId);
 
         if (!debt) {
             return res.status(404).json({ message: 'Debt not found' });
         }
 
         const payment = await FastingPayment.create({
-            debt_id,
+            debt_id: debtId,
             device_id: debt.device_id, 
             payment_date,
             amount
@@ -103,7 +103,7 @@ exports.createFastingPayment = async (req, res) => {
 
         // hitung total payment
         const totalPaid = await FastingPayment.sum('amount', {
-            where: { debt_id }
+            where: { debt_id : debtId }
         });
 
         if (totalPaid >= debt.missed_days) {
@@ -115,6 +115,9 @@ exports.createFastingPayment = async (req, res) => {
         await debt.save();
 
         res.status(201).json(payment);
+        
+        console.log("TOTAL PAID:", totalPaid);
+        console.log("MISSED DAYS:", debt.missed_days);
     } catch (error) {
         console.error('FULL ERROR:', error);
         res.status(500).json({ message: error.message });

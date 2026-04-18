@@ -307,7 +307,7 @@ const updateMenstruationRecord = async (req, res, next) => {
       let debt = await FastingDebt.findOne({ where: { record_id: record.record_id } });
 
       if (debt) {
-        const totalPaid = await createFastingPayment.sum('amount', {
+        const totalPaid = await FastingPayment.sum('amount', {
           where: { debt_id: debt.debt_id }
         }) || 0 ;
         let newStatus = 'belum_lunas';
