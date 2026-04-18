@@ -22,7 +22,7 @@ router.post('/test-weekly', async (req, res) => {
             return res.status(400).json({ error: 'fcmToken diperlukan' });
         }
 
-        const result = await sendWeeklyReminder(fcmToken, false); 
+        const result = await sendWeeklyReminder(fcmToken, true); 
 
         res.status(200).json(result);
 
