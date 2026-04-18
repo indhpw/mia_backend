@@ -106,13 +106,15 @@ exports.createFastingPayment = async (req, res) => {
             where: { debt_id : debtId }
         });
 
-        if (totalPaid >= debt.missed_days) {
-            debt.status = 'lunas';
-        } else {
-            debt.status = 'belum_lunas';
-        }
+            if (totalPaid >= debt.missed_days) {
+                debt.status = 'lunas';
+            } else {
+                debt.status = 'belum_lunas';
+            }
 
-        await debt.save();
+            debt.updated_at = new Date();
+
+            await debt.save({ fields: ['status', 'updated_at'] });
 
         res.status(201).json(payment);
         
