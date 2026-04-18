@@ -7,6 +7,7 @@ const Device = models.Device;
 const FastingPayment = models.FastingPayment;
 const moment = require('moment');
 const momentHijri = require('moment-hijri');
+const { get } = require('../routes/deviceRoutes');
 
 console.log('Imported FastingDebt in menstruationController:', FastingDebt ? 'OK' : 'UNDEFINED');
 console.log('FastingDebt.create exists?', typeof FastingDebt?.create === 'function');  // harus true
@@ -461,6 +462,31 @@ const getNextCycleCountdown = async (req, res, next) => {
   }
 };
 
+// GET: Latest menstruation record
+const getLatestMenstruationRecord = async (req, res) => {
+  try {
+    const { device_id } = req.query;
+
+    if (!device_id) {
+      return res.status(400).json({ error: 'device_id is required' });
+    }
+
+    const record = await MenstruationRecord.findOne({
+      where: { device_id: parseInt(device_id) },
+      order: [['start_date', 'DESC']],
+    });
+
+    if (!record) {
+      return res.status(404).json({ error: 'No record found' });
+    }
+
+    res.status(200).json(record);
+  } catch (error) {
+    console.error('Error fetching latest record:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
 // Export all functions
 module.exports = {
   validateCreateMenstruationRecord,
@@ -471,4 +497,5 @@ module.exports = {
   deleteMenstruationRecord,
   predictNextCycle,
   getNextCycleCountdown,
+  getLatestMenstruationRecord
 };

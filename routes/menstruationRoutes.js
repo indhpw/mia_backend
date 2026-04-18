@@ -24,5 +24,6 @@ router.put('/records/:record_id',
 router.delete('/records/:record_id', menstruationController.deleteMenstruationRecord);
 router.get('/predict', menstruationController.predictNextCycle);
 router.get('/countdown/:device_id', menstruationController.getNextCycleCountdown);
+router.get('/records/latest', menstruationController.getLatestMenstruationRecord);
 
 module.exports = router; // Export only the router
