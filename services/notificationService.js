@@ -195,7 +195,7 @@ async function sendTestNotification(fcmToken) {
 }
 
 //CRON untuk notifikasi senin kamis dan ayyamul bidh
-cron.schedule('0 7 * * *', async () => {
+cron.schedule('*/1 * * * *', async () => {
 
   const today = new Date().getDay();
 
@@ -279,7 +279,7 @@ async function sendAyyamulBidhReminder(fcmToken, isTest = false) {
 }
 
 async function sendWeeklyReminder(fcmToken, isTest = false) {
-
+  
   const today = new Date().getDay();
   const m = momentHijri();
   const hijriMonth = m.iMonth() + 1;
@@ -339,15 +339,14 @@ async function sendPaymentConfirmation(fcmToken, debtId, paymentDate) {
     mes: "Payment confirmation dummy"
   };}
 
-/**
- * Export jika ingin digunakan di file lain
- */
+
 module.exports = {
   getUsersWithHutang,
   sendTestNotification,
   sendWeeklyReminder,
   sendAyyamulBidhReminder,
-  sendCycleReminder
+  sendCycleReminder,
+  sendPaymentConfirmation
 };
 
 console.log("DEBUG weekly:", sendWeeklyReminder);

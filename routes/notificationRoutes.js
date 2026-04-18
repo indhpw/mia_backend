@@ -13,7 +13,7 @@ const { Device } = require('../models');  // Import model Device
 
 console.log('notificationRoutes.js loaded');
 
-// Endpoint test reminder (tetap sama)
+// Endpoint test reminder
 router.post('/test-weekly', async (req, res) => {
     try {
         const { fcmToken } = req.body;
@@ -28,6 +28,25 @@ router.post('/test-weekly', async (req, res) => {
 
     } catch (error) {
         console.error('Error testing weekly reminder:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+//endpoint reminder
+router.post('/weekly', async (req, res) => {
+    try {
+        const { fcmToken } = req.body;
+
+        if (!fcmToken) {
+            return res.status(400).json({ error: 'fcmToken diperlukan' });
+        }
+
+        const result = await sendWeeklyReminder(fcmToken, false);
+
+        res.status(200).json(result);
+
+    } catch (error) {
+        console.error('Error weekly reminder:', error);
         res.status(500).json({ error: error.message });
     }
 });
