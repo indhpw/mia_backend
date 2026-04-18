@@ -41,18 +41,22 @@ const removeInvalidTokens = async (invalidTokens) => {
  * Ambil semua user yang memiliki hutang puasa
  */
 const getUsersWithHutang = async () => {
+
   try {
 
+      console.log("CHECK FastingPayment:", FastingPayment);
+
+
     // Hitung total missed & paid
- const debts = await FastingDebt.findAll({
-  include: [
-    {
-      model: FastingPayment,
-      as: 'payments',
-      attributes: ['amount']
-    }
-  ]
-});
+  const debts = await FastingDebt.findAll({
+    include: [
+      {
+        model: FastingPayment,
+        as: 'payments',
+        attributes: ['amount']
+      }
+    ]
+  });
 
     // ambil semua device yang memiliki FCM token
     const devices = await Device.findAll({
@@ -71,7 +75,11 @@ const userMap = new Map();
 
 for (const debt of debts) {
 
-  const totalPaid = debt.payments.reduce((sum, p) => sum + (p.amount || 0), 0);
+  const totalPaid = (debt.payments || []). reduce(
+    (sum, p) => sum + (p.amount || 0),
+    0
+  );
+
   const hutang = debt.missed_days - totalPaid;
 
   if (hutang > 0 && deviceMap.has(debt.device_id)) {
@@ -91,9 +99,10 @@ for (const debt of debts) {
 return Array.from(userMap.values());
 
   } catch (error) {
-    console.error('Error fetching usersh with hutang:', error.stack);
+    console.error('Error fetching users with hutang:', error.stack);
     return [];
   }
+
 };
 
 /**
@@ -207,16 +216,11 @@ cron.schedule('0 7 * * *', async () => {
   // AYYAMUL BIDH (notif H-1)
   if (besokHijri.day >= 13 && besokHijri.day <= 15) {
 
-    for (const user of users) {
-      await messaging.send({
-        token: user.fcm_token,
-        data: {
-          title: 'Pengingat Ayyamul Bidh',
-          body: `Besok tanggal ${besokHijri.day} bulan Hijriah. Kamu masih punya utang puasa, mau sekalian dibayar?`,
-          type: "ayyamul_bidh"
-        }
-      });
-    }
+    await sendBulkNotification(
+      users,
+      "Pengingat Puasa Senin Kamis",
+      (u) => `Kamu masih punya utang ${u.hutang} hari`
+    );
   }
 
   // SENIN & KAMIS (notif H-1)
@@ -224,16 +228,11 @@ cron.schedule('0 7 * * *', async () => {
 
     const targetDay = today === 0 ? "Senin" : "Kamis";
 
-    for (const user of users) {
-      await messaging.send({
-        token: user.fcm_token,
-        data: {
-          title: 'Pengingat Puasa Senin Kamis',
-          body: `Besok hari ${targetDay}. Kamu masih punya utang puasa, mau dibayar?`,
-          type: "weekly"
-        }
-      });
-    }
+    await sendBulkNotification(
+      users,
+      "Pengingat Puasa Senin Kamis",
+      (u) => `Kamu masih punya utang ${u.hutang} hari`
+    );
   }
 
 }, {
@@ -285,6 +284,8 @@ async function sendWeeklyReminder(fcmToken, isTest = false) {
   const m = momentHijri();
   const hijriMonth = m.iMonth() + 1;
 
+  const isRamadan = hijriMonth === 9;
+
   console.log("TODAY:", today);
   console.log("IS TEST:", isTest);
   console.log("HIJRI MONTH: ", hijriMonth);
@@ -292,7 +293,7 @@ async function sendWeeklyReminder(fcmToken, isTest = false) {
   //  Kalau REAL (bukan test)
   if (!isTest) {
 
-    if (hijriMonth === 9){
+    if (isRamadan){
       return {
         success: false,
         message: "Ramadan - notifikasi dimatikan"
