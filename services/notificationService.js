@@ -195,7 +195,7 @@ async function sendTestNotification(fcmToken) {
 }
 
 //CRON untuk notifikasi senin kamis dan ayyamul bidh
-cron.schedule('*/1 * * * *', async () => {
+cron.schedule('0 19 * * *', async () => {
 
   const today = new Date().getDay();
 
