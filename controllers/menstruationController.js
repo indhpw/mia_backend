@@ -318,7 +318,7 @@ const updateMenstruationRecord = async (req, res, next) => {
         }
         await debt.update({
           missed_days: missedDays,
-          status: missedDays === 0 ? 'tidak_ada_hutang' : newStatus,
+          status: missedDays === 0 ? 'lunas' : newStatus,
           updated_at: new Date()
         });
         console.log(`Updated debt_id ${debt.debt_id} to missed_days=${missedDays}`);
@@ -337,7 +337,7 @@ const updateMenstruationRecord = async (req, res, next) => {
     } else{
       if (!updateData.is_ramadan) {
         await FastingDebt.update(
-          { status: 'tidak_berlaku' },
+          { status: 'lunas' },
           { where : { record_id: record.record_id}}
         );
       }
