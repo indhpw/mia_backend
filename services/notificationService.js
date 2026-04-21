@@ -19,9 +19,6 @@ if (!admin.apps.length) {
 
 const messaging = admin.messaging();
 
-/**
- * Hapus token FCM yang tidak valid
- */
 const removeInvalidTokens = async (invalidTokens) => {
   try {
     if (invalidTokens.length === 0) return;
@@ -37,9 +34,7 @@ const removeInvalidTokens = async (invalidTokens) => {
   }
 };
 
-/**
- * Ambil semua user yang memiliki hutang puasa
- */
+//ambil semua user yang punya hutang puasa
 const getUsersWithHutang = async () => {
 
   try {
@@ -105,9 +100,7 @@ return Array.from(userMap.values());
 
 };
 
-/**
- * Kirim notifikasi ke banyak user sekaligus
- */
+//kirim notifikasi ke banyak user sekaligus
 const sendBulkNotification = async (users, title, bodyGenerator) => {
 
   try {
@@ -155,9 +148,7 @@ const sendBulkNotification = async (users, title, bodyGenerator) => {
   }
 };
 
-/**
- * Test kirim notifikasi manual ke satu device
- */
+// Test kirim notifikasi manual ke satu device
 async function sendTestNotification(fcmToken) {
 
   try {
@@ -195,6 +186,8 @@ async function sendTestNotification(fcmToken) {
 }
 
 //CRON untuk notifikasi senin kamis dan ayyamul bidh
+
+//notifikasi akan muncul pada pukul 7 malam
 cron.schedule('0 19 * * *', async () => {
 
   const today = new Date().getDay();
@@ -219,7 +212,7 @@ cron.schedule('0 19 * * *', async () => {
     await sendBulkNotification(
       users,
       "Pengingat Puasa Senin Kamis",
-      (u) => `Kamu masih punya utang ${u.hutang} hari`
+      (u) => `Kamu masih punya utang ${u.hutang} hari, apakah mau bayar besok?`
     );
   }
 
@@ -231,7 +224,7 @@ cron.schedule('0 19 * * *', async () => {
     await sendBulkNotification(
       users,
       "Pengingat Puasa Senin Kamis",
-      (u) => `Kamu masih punya utang ${u.hutang} hari`
+      (u) => `Kamu masih punya utang ${u.hutang} hari, apakah mau bayar besok?`
     );
   }
 
@@ -239,13 +232,12 @@ cron.schedule('0 19 * * *', async () => {
   timezone: 'Asia/Jakarta'
 });
 
-
+//notifikasi ayyamul bidh
 async function sendAyyamulBidhReminder(fcmToken, isTest = false) {
   try {
 
     const besokHijri = getTomorrowHijri();
 
-    // VALIDASI
     if (!isTest && (besokHijri.day < 13 || besokHijri.day > 15)) {
       return {
         success: false,
@@ -257,7 +249,7 @@ async function sendAyyamulBidhReminder(fcmToken, isTest = false) {
       token: fcmToken,
       data: {
         title: "Pengingat Ayyamul Bidh",
-        body: `Besok ${besokHijri.day} bulan Hijriah dan kamu masih ada utang puasa.`,
+        body: `Besok ${besokHijri.day}  Hijriah dan kamu masih ada utang puasa. Apakah mau bayar besok?`,
         type: 'ayyamul_bidh'
       }      
     };
@@ -278,6 +270,7 @@ async function sendAyyamulBidhReminder(fcmToken, isTest = false) {
   }
 }
 
+//notifikasi senin kamis
 async function sendWeeklyReminder(fcmToken, isTest = false) {
   
   const today = new Date().getDay();
@@ -290,7 +283,6 @@ async function sendWeeklyReminder(fcmToken, isTest = false) {
   console.log("IS TEST:", isTest);
   console.log("HIJRI MONTH: ", hijriMonth);
 
-  //  Kalau REAL (bukan test)
   if (!isTest) {
 
     if (isRamadan){
@@ -317,7 +309,7 @@ async function sendWeeklyReminder(fcmToken, isTest = false) {
     token: fcmToken,
     data: {
       title: "Pengingat Puasa Senin Kamis",
-      body: `Besok hari ${targetDay} dan kamu masih ada utang puasa.`,
+      body: `Besok hari ${targetDay} dan kamu masih ada utang puasa, apakah mau bayar besok?`,
       type: 'weekly'
     }
   });
@@ -326,27 +318,11 @@ async function sendWeeklyReminder(fcmToken, isTest = false) {
 }
 
 
-async function sendCycleReminder(fcmToken, startDate) {
-    return {
-    success: true,
-    mes: "Cycle reminder dummy"
-  };
-}
-
-async function sendPaymentConfirmation(fcmToken, debtId, paymentDate) {
- return {
-    success: true,
-    mes: "Payment confirmation dummy"
-  };}
-
-
 module.exports = {
   getUsersWithHutang,
   sendTestNotification,
   sendWeeklyReminder,
-  sendAyyamulBidhReminder,
-  sendCycleReminder,
-  sendPaymentConfirmation
+  sendAyyamulBidhReminder
 };
 
 console.log("DEBUG weekly:", sendWeeklyReminder);

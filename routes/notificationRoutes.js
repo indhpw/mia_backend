@@ -9,7 +9,7 @@ const {
     sendPaymentConfirmation,
     getUsersWithHutang
 } = require('../services/notificationService'); 
-const { Device } = require('../models');  // Import model Device
+const { Device } = require('../models');  
 
 console.log('notificationRoutes.js loaded');
 
@@ -51,7 +51,7 @@ router.post('/weekly', async (req, res) => {
     }
 });
 
-
+//endpoint ayyamul bidh
 router.post('/test-ayyamul-bidh', async (req, res) => {
     try {
         const { fcmToken } = req.body;
@@ -66,19 +66,6 @@ router.post('/test-ayyamul-bidh', async (req, res) => {
     }
 });
 
-router.post('/test-cycle', async (req, res) => {
-    try {
-        const { fcmToken, startDate } = req.body;
-        if (!fcmToken || !startDate) {
-            return res.status(400).json({ error: 'fcmToken dan startDate diperlukan' });
-        }
-        const result = await sendCycleReminder(fcmToken, startDate);
-        res.status(200).json(result);
-    } catch (error) {
-        console.error('Error testing cycle reminder:', error.stack);
-        res.status(500).json({ error: 'Kesalahan server internal', details: error.message });
-    }
-});
 
 router.post('/test-payment', async (req, res) => {
     try {
@@ -104,7 +91,7 @@ router.post('/save-token', async (req, res) => {
 
         const [updated] = await Device.update(
             { fcm_token: token },
-            { where: { device_id } }  // Gunakan device_id sebagai primary key
+            { where: { device_id } }  
         );
 
         if (updated === 0) {
@@ -136,12 +123,9 @@ const result = await sendTestNotification(fcmToken);
 
 });
 
-
-// Opsional: endpoint baru untuk registrasi device tanpa FCM token
-// Jika kamu ingin memisahkan dari notificationRoutes, bisa pindah ke deviceroutes.js
 router.post('/register', async (req, res) => {
     try {
-        const { fcmToken } = req.body || {};  // FCM token optional
+        const { fcmToken } = req.body || {};  
 
         const device = await Device.create({
             fcm_token: fcmToken || null,

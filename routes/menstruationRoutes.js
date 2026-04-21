@@ -3,9 +3,6 @@ const router = express.Router();
 const menstruationController = require('../controllers/menstruationController');
 
 // Log untuk debugging impor controller
-if (process.env.NODE_ENV !== 'production') {
-  console.log('menstruationController loaded');
-}
 console.log('updateMenstruationRecord:', menstruationController.updateMenstruationRecord);
 console.log('createMenstruationRecord:', menstruationController.createMenstruationRecord);
 console.log('predictNextCycle:', menstruationController.predictNextCycle);
@@ -21,9 +18,8 @@ router.put('/records/:record_id',
      ...(menstruationController.validateUpdateMenstruationRecord ||[]),
     menstruationController.updateMenstruationRecord
 );
-router.delete('/records/:record_id', menstruationController.deleteMenstruationRecord);
 router.get('/predict', menstruationController.predictNextCycle);
 router.get('/countdown/:device_id', menstruationController.getNextCycleCountdown);
 router.get('/records/latest', menstruationController.getLatestMenstruationRecord);
 
-module.exports = router; // Export only the router
+module.exports = router; 

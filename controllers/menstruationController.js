@@ -1,5 +1,5 @@
 const { body, validationResult } = require('express-validator');
-const { Op, where } = require('sequelize');
+const { Op } = require('sequelize');
 const models = require('../models');
 const FastingDebt = models.FastingDebt;
 const MenstruationRecord = models.MenstruationRecord;
@@ -7,15 +7,12 @@ const Device = models.Device;
 const FastingPayment = models.FastingPayment;
 const moment = require('moment');
 const momentHijri = require('moment-hijri');
-const { get } = require('../routes/deviceRoutes');
 
-console.log('Imported FastingDebt in menstruationController:', FastingDebt ? 'OK' : 'UNDEFINED');
-console.log('FastingDebt.create exists?', typeof FastingDebt?.create === 'function');  // harus true
 
-// Set moment locale to English for Gregorian dates
+// atur ke bahasa Inggris untuk tanggal kalender gregorian
 moment.locale('en');
 
-// Validation middleware for create
+// validasi middleware untuk create
 const validateCreateMenstruationRecord = [
   body('device_id')
     .isInt({ min: 1 }).withMessage('device_id must be a positive integer')
@@ -38,7 +35,7 @@ const validateCreateMenstruationRecord = [
     .toDate(),
 ];
 
-// Validation middleware for update
+// validasi middleware untuk update
 const validateUpdateMenstruationRecord = [
   body('device_id')
   .optional()
@@ -63,8 +60,7 @@ const validateUpdateMenstruationRecord = [
     .toDate(),
 ];
 
-
-// Utility function to convert Gregorian to Hijri date
+// fungsi utility untuk convert tanggal gregorian ke hijriah
 const convertToHijri = (gregorianDate) => {
   if (!gregorianDate || !moment(gregorianDate).isValid()) {
     return momentHijri().format('iD-iM-iYYYY'); // Fallback to current Hijri date
@@ -77,7 +73,7 @@ const convertToHijri = (gregorianDate) => {
   }
 };
 
-// Utility function to check if a date is in Ramadan
+// fungsi utility untuk mengecek apakah ramadan
 const isRamadan = (gregorianDate) => {
   if (!gregorianDate || !moment(gregorianDate).isValid()) return false;
   try {
@@ -88,7 +84,7 @@ const isRamadan = (gregorianDate) => {
   }
 };
 
-// Utility function to calculate period length
+// fungsi utility unruk menghitung period length
 const calculatePeriodLength = (startMoment, endMoment) => {
   if (startMoment && endMoment && endMoment.isValid() && startMoment.isValid()) {
     return endMoment.diff(startMoment, 'days') + 1;
@@ -96,11 +92,14 @@ const calculatePeriodLength = (startMoment, endMoment) => {
   return null;
 };
 
-// Utility function to calculate cycle length
+// fungsi utility untuk menghitung cycle length
 const calculateCycleLength = async (device_id, start_date) => {
   try {
     const previousRecord = await MenstruationRecord.findOne({
-      where: { device_id },
+      where: { 
+        device_id,
+      start_date: { [Op.lt]: start_date}
+     },
       order: [['start_date', 'DESC']],
       attributes: ['start_date'],
     });
@@ -109,31 +108,31 @@ const calculateCycleLength = async (device_id, start_date) => {
       const previousStart = moment(previousRecord.start_date).startOf('day');
       if (currentStart.isValid() && previousStart.isValid()) {
         const diff = currentStart.diff(previousStart, 'days');
-        return diff > 0 ? diff : 28; // Ensure positive difference
+        return diff > 0 ? diff : 28; 
       }
     }
-    return 28; // Default for first record or invalid dates
+    return 28; 
   } catch (error) {
     console.error('Error calculating cycle length:', { error: error.message, device_id, start_date });
-    return 28; // Default on error
+    return 28;
   }
 };
 
-// Utility function to get next device_record_number
+// fungsi utility untuk GET device_record_number berikutnya
 const getNextDeviceRecordNumber = async (device_id) => {
   try {
     const count = await MenstruationRecord.count({ where: { device_id } });
     return count + 1;
   } catch (error) {
     console.error('Error getting device_record_number:', { error: error.message });
-    return 1; // Default to 1 if error
+    return 1; 
   }
 };
 
-// Utility function to calculate missed days in Ramadan
+// fungsi utility untuk menghitung hutang puasa ramadan
 const calculateMissedDaysInRamadan = (startMoment, endMoment) => {
   if (!startMoment || !endMoment || !endMoment.isValid() || !startMoment.isValid()) {
-    return 0;  // Aman jika tanggal invalid
+    return 0;  
   }
 
   let missedDays = 0;
@@ -146,7 +145,7 @@ const calculateMissedDaysInRamadan = (startMoment, endMoment) => {
     current.add(1, 'day');
   }
 
-  return missedDays;  // Selalu return number >= 0
+  return missedDays;  
 };
 
 // POST: Create a menstruation record
@@ -160,7 +159,7 @@ const createMenstruationRecord = async (req, res, next) => {
   try {
     const { device_id, start_date, end_date } = req.body;
 
-    // Validate device_id
+    // Validatsi device_id
     const device = await Device.findByPk(device_id);
     if (!device) {
       return res.status(404).json({ error: 'Invalid device_id' });
@@ -170,11 +169,11 @@ const createMenstruationRecord = async (req, res, next) => {
     const startMoment = moment(start_date).startOf('day');
     const endMoment = end_date ? moment(end_date).startOf('day') : null;
 
-    // Calculate period and cycle lengths
+    // hitung period and cycle lengths
     const period_length = calculatePeriodLength(startMoment, endMoment);
     const cycle_length = await calculateCycleLength(device_id, start_date);
 
-    // Convert to Hijri and check Ramadan
+    // Convert ke Hijri and check Ramadan
     const hijri_start_date = convertToHijri(start_date);
     const hijri_end_date = end_date ? convertToHijri(end_date) : convertToHijri(start_date);
     const is_ramadan = endMoment 
@@ -184,7 +183,7 @@ const createMenstruationRecord = async (req, res, next) => {
     // Get device_record_number
     const device_record_number = await getNextDeviceRecordNumber(device_id);
 
-    // Save record
+    // simpan record
     const record = await MenstruationRecord.create({
       device_id,
       device_record_number,
@@ -198,7 +197,7 @@ const createMenstruationRecord = async (req, res, next) => {
       created_at: new Date(),
     });
 
-    // Record fasting debts if in Ramadan
+  //catat hutang puasa jika  sedang dalam bulan ramadan
 // Hitung jumlah hari haid yang jatuh di bulan Ramadan
   if (endMoment) {
     let ramadanHaulDays = 0;
@@ -206,7 +205,7 @@ const createMenstruationRecord = async (req, res, next) => {
 
   while (currentDate.isSameOrBefore(endMoment, 'day')) {
     // Cek apakah hari ini termasuk Ramadan (bulan Hijriah ke-9)
-      if (isRamadan(currentDate)) {
+      if (isRamadan(currentDate.)) {
         ramadanHaulDays++;
       }
       currentDate.add(1, 'day');
@@ -277,7 +276,6 @@ const updateMenstruationRecord = async (req, res, next) => {
     const startMoment = moment(record.start_date).startOf('day');
     const endMoment = end_date ? moment(end_date).startOf('day') : null;
 
-    // Validasi end_date > start_date jika dikirim
     if (end_date && endMoment.isSameOrBefore(startMoment, 'day')) {
       return res.status(400).json({ error: 'end_date must be after start_date' });
     }
@@ -291,13 +289,6 @@ const updateMenstruationRecord = async (req, res, next) => {
     if (period_length !== undefined) updateData.period_length = period_length;
     if (cycle_length !== undefined) updateData.cycle_length = cycle_length;
 
-    // Update debt jika ada perubahan end_date dan is_ramadan
-    if (end_date !== undefined) {
-      updateData.end_date = endMoment? endMoment.format('YYYY-MM-DD') : null;
-      updateData.hijri_end_date = end_date ? convertToHijri(end_date) : record.hijri_end_date;
-      updateData.is_ramadan = isRamadan(record.start_date) || (end_date && isRamadan(end_date));
-      //const missedDays = calculateMissedDaysInRamadan(startMoment, endMoment);
-    }
 
     await record.update(updateData);
 
@@ -348,25 +339,6 @@ const updateMenstruationRecord = async (req, res, next) => {
   } catch (error) {
     console.error('Error updating menstruation record:', error.stack);
     res.status(500).json({ error: 'Internal server error', details: error.message });
-  }
-};
-
-// DELETE: Delete menstruation record
-const deleteMenstruationRecord = async (req, res, next) => {
-  try {
-    const { record_id } = req.params;
-    const record = await MenstruationRecord.findByPk(record_id);
-    if (!record) {
-      return res.status(404).json({ error: 'Record not found' });
-    }
-
-    await FastingDebt.destroy({ where: { record_id } });
-    await record.destroy();
-    console.log('Menstruation Record deleted:', { record_id });
-    res.status(204).json();
-  } catch (error) {
-    console.error('Error deleting menstruation record:', { error: error.message, stack: error.stack, input: req.params });
-    next(error);
   }
 };
 
@@ -487,14 +459,12 @@ const getLatestMenstruationRecord = async (req, res) => {
   }
 };
 
-// Export all functions
 module.exports = {
   validateCreateMenstruationRecord,
   validateUpdateMenstruationRecord,
   createMenstruationRecord,
   getMenstruationRecords,
   updateMenstruationRecord,
-  deleteMenstruationRecord,
   predictNextCycle,
   getNextCycleCountdown,
   getLatestMenstruationRecord

@@ -4,8 +4,6 @@ const router = express.Router();
 
 const fastingController = require('../controllers/fastingController');
 
-// ================= VALIDATION =================
-
 const validate = (req, res, next) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -15,7 +13,7 @@ const validate = (req, res, next) => {
     next();
 };
 
-//  VALIDASI PAYMENT (FIX)
+//  VALIDASI PAYMENT 
 const validatePayment = [
     param('debt_id').isInt().withMessage('debt_id must be integer'),
     body('payment_date').isISO8601().withMessage('Invalid date'),
@@ -31,13 +29,12 @@ const validateDeviceId = [
     param('device_id').isInt().withMessage('device_id must be integer'),
 ];
 
-//  UPDATE DEBT (SUDAH TANPA paid_days & paid_dates)
+//UPDATE DEBT
 const validateDebtUpdate = [
     param('debt_id').isInt(),
     body('status').optional().isIn(['lunas', 'belum_lunas'])
 ];
 
-// ================= ROUTES =================
 
 //  GET debt by ID
 router.get('/debts/:debt_id', 
@@ -58,14 +55,14 @@ router.post('/debts',
     fastingController.createFastingDebt
 );
 
-//  UPDATE debt (FIX)
+//  UPDATE debt 
 router.put('/debts/:debt_id',
     validateDebtUpdate,
     validate,
     fastingController.updateFastingDebt
 );
 
-//  PAY debt (RECOMMENDED)
+//  PAY debt
 router.post('/debts/:debt_id/pay',
     validatePayment,
     validate,

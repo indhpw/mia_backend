@@ -1,7 +1,6 @@
 const { body, param, validationResult } = require('express-validator');
 const { Op, where } = require('sequelize');
 const db = require('../models');
-const { messaging } = require('firebase-admin');
 const FastingDebt = db.FastingDebt;
 const FastingPayment = db.FastingPayment;
 const MenstruationRecord = db. MenstruationRecord;
@@ -19,14 +18,9 @@ exports.createFastingDebt = [
         try {
             const { device_id, record_id, missed_days } = req.body;
 
-            // //test saat ramadan
-            // const isTestRamadan = true;
-            // const m = momentHijri();
-            // const hijriMonth = isTestRamadan ? 8 : m.iMonth();
-
             //cek apakah Ramadan
             const m = momentHijri();
-            const hijriMonth = m.iMonth() + 1;  //dari 0, Ramadan di 8
+            const hijriMonth = m.iMonth() + 1;  //dari 0 + 1, Ramadan di 9
 
             const isRamadan = hijriMonth === 9;
 
@@ -149,7 +143,7 @@ exports.getPayments = async (req, res) => {
 
 exports.getFastingDebts = async (req, res) => {
     try {
-        const { device_id } = req.query;
+        const { device_id } = req.params;
         const debts = await FastingDebt.findAll({
             where: device_id ? { device_id: parseInt(device_id) } : {},
             include: [
@@ -202,24 +196,3 @@ exports.getFastingDebtById = async (req, res) => {
         res.status(500).json({ message: 'Internal server error' });
     }
 };
-
-exports.deleteFastingDebt = [
-    param('debt_id').isInt().withMessage('Debt ID must be an integer'),
-    async (req, res) => {
-        try {
-            const { debt_id } = req.params;
-            const debt = await FastingDebt.findByPk(debt_id);
-            if (!debt) {
-                console.log('Debt not found for debt_id:', debt_id);
-                return res.status(404).json({ error: 'Debt not found' });
-            }
-            await FastingPayment.destroy({ where: { debt_id } });
-            await debt.destroy();
-            console.log('Fasting debt deleted:', debt_id);
-            res.status(204).send();
-        } catch (error) {
-            console.error('Error deleting fasting debt:', error.stack);
-            res.status(500).json({ error: 'Internal server error', details: error.message });
-        }
-    }
-];
