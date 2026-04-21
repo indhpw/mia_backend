@@ -205,7 +205,7 @@ const createMenstruationRecord = async (req, res, next) => {
 
   while (currentDate.isSameOrBefore(endMoment, 'day')) {
     // Cek apakah hari ini termasuk Ramadan (bulan Hijriah ke-9)
-      if (isRamadan(currentDate.)) {
+      if (isRamadan(currentDate)) {
         ramadanHaulDays++;
       }
       currentDate.add(1, 'day');
