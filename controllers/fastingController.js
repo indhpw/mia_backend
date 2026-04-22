@@ -159,27 +159,6 @@ exports.getFastingDebts = async (req, res) => {
     }
 };
 
-exports.updateFastingDebt = async (req, res) => {
-    try {
-        const { debt_id } = req.params;
-        const { status } = req.body;
-
-        const debt = await FastingDebt.findByPk(debt_id);
-        if (!debt) {
-            return res.status(404).json({ error: 'Debt not found' });
-        }
-
-        if (status !== undefined) debt.status = status;
-
-        await debt.save();
-
-        res.status(200).json({ message: 'Debt updated' });
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ error: error.message });
-    }
-};
-
 exports.getFastingDebtById = async (req, res) => {
     try {
         const { debt_id } = req.params;

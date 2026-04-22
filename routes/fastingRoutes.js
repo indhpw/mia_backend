@@ -60,13 +60,6 @@ router.post('/debts',
     fastingController.createFastingDebt
 );
 
-//  UPDATE debt 
-router.put('/debts/:debt_id',
-    validateDebtUpdate,
-    validate,
-    fastingController.updateFastingDebt
-);
-
 //  PAY debt
 router.post('/debts/:debt_id/pay',
     validatePayment,
