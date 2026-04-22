@@ -13,7 +13,7 @@ const { Device } = require('../models');
 
 console.log('notificationRoutes.js loaded');
 
-// Endpoint test reminder
+// Endpoint test reminder senin kamis
 router.post('/test-weekly', async (req, res) => {
     try {
         const { fcmToken } = req.body;
@@ -51,7 +51,7 @@ router.post('/weekly', async (req, res) => {
     }
 });
 
-//endpoint ayyamul bidh
+//endpoint test reminder puasa ayyamul bidh
 router.post('/test-ayyamul-bidh', async (req, res) => {
     try {
         const { fcmToken } = req.body;
@@ -66,6 +66,7 @@ router.post('/test-ayyamul-bidh', async (req, res) => {
     }
 });
 
+//endpoint reminder puasa ayyamul bidh
 router.post('/ayyamul-bidh', async (req, res) => {
     try {
         const { fcmToken } = req.body;
