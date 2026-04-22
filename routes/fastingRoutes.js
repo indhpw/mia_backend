@@ -22,11 +22,16 @@ const validatePayment = [
 
 // VALIDASI PARAM
 const validateDebtId = [
-    param('debt_id').isInt().withMessage('debt_id must be integer'),
+    param('debt_id')
+    .isInt()
+    .withMessage('debt_id must be integer'),
 ];
 
 const validateDeviceId = [
-    param('device_id').isInt().withMessage('device_id must be integer'),
+    param('device_id')
+    .isInt({ min: 1 })
+    .withMessage('device_id must be integer')
+    .toInt(),
 ];
 
 //UPDATE DEBT
@@ -43,7 +48,7 @@ router.get('/debts/:debt_id',
     fastingController.getFastingDebtById
 );
 
-//  GET debts by device (FIX: pakai params)
+//  GET debts by device 
 router.get('/debts/device/:device_id',
     validateDeviceId,
     validate,
@@ -70,7 +75,7 @@ router.post('/debts/:debt_id/pay',
 );
 
 //  GET payments
-router.get('/payments/:debt_id',
+router.get('/payments/:device_id',
     validateDeviceId,
     validate,
     fastingController.getPayments
