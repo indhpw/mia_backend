@@ -70,7 +70,7 @@ router.post('/debts/:debt_id/pay',
 );
 
 //  GET payments
-router.get('/payments/:device_id',
+router.get('/payments/:debt_id',
     validateDeviceId,
     validate,
     fastingController.getPayments

@@ -187,6 +187,9 @@ async function sendTestNotification(fcmToken) {
 
 //CRON untuk notifikasi senin kamis dan ayyamul bidh
 
+//buat testing, 1 menit sekali ada notif (annoying euy)
+//cron.schedule('*/1 * * * *', async () => {
+  
 //notifikasi akan muncul pada pukul 7 malam
 cron.schedule('0 19 * * *', async () => {
 

@@ -32,7 +32,7 @@ router.post('/test-weekly', async (req, res) => {
     }
 });
 
-//endpoint reminder
+//endpoint reminder untuk puasa senin kamis
 router.post('/weekly', async (req, res) => {
     try {
         const { fcmToken } = req.body;
@@ -63,6 +63,24 @@ router.post('/test-ayyamul-bidh', async (req, res) => {
     } catch (error) {
         console.error('Error testing Ayyamul Bidh reminder:', error.stack);
         res.status(500).json({ error: 'Kesalahan server internal', details: error.message });
+    }
+});
+
+router.post('/ayyamul-bidh', async (req, res) => {
+    try {
+        const { fcmToken } = req.body;
+
+        if (!fcmToken) {
+            return res.status(400).json({ error: 'fcmToken diperlukan' });
+        }
+
+        const result = await sendAyyamulBidhReminder(fcmToken);
+
+        res.status(200).json(result);
+
+    } catch (error) {
+        console.error('Error ayyamul bidh reminder:', error);
+        res.status(500).json({ error: error.message });
     }
 });
 
