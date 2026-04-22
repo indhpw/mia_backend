@@ -58,7 +58,7 @@ router.post('/test-ayyamul-bidh', async (req, res) => {
         if (!fcmToken) {
             return res.status(400).json({ error: 'fcmToken diperlukan' });
         }
-        const result = await sendAyyamulBidhReminder(fcmToken);
+        const result = await sendAyyamulBidhReminder(fcmToken, true);
         res.status(200).json(result);
     } catch (error) {
         console.error('Error testing Ayyamul Bidh reminder:', error.stack);
