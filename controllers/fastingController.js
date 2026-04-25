@@ -25,7 +25,7 @@ exports.createFastingDebt = [
             const isRamadan = hijriMonth === 9;
 
             console.log("HIJRI MONTH: ", hijriMonth);
-            console.log("MODE:", hijriMonth === 8 ? "RAMADAN" : "NON-RAMADAN");
+            console.log("MODE:", hijriMonth === 9 ? "RAMADAN" : "NON-RAMADAN");
 
             //kalo Ramadan
             if (isRamadan) {

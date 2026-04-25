@@ -185,6 +185,7 @@ async function sendTestNotification(fcmToken) {
   }
 }
 
+function startCronJobs() {
 //CRON untuk notifikasi senin kamis dan ayyamul bidh
 
 //buat testing, 1 menit sekali ada notif (annoying euy)
@@ -234,6 +235,11 @@ cron.schedule('0 19 * * *', async () => {
 }, {
   timezone: 'Asia/Jakarta'
 });
+}
+
+if (process.env.NODE_ENV !== 'test'){
+  startCronJobs();
+}
 
 //notifikasi ayyamul bidh
 async function sendAyyamulBidhReminder(fcmToken, isTest = false) {

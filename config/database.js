@@ -1,8 +1,11 @@
+require('dotenv').config({ 
+  path: process.env.NODE_ENV === 'test' ? '.env.test' : ',env' 
+});
+
 const { Sequelize } = require("sequelize");
 
 const dbUrl = process.env.DATABASE_URL;
 
-// 🚨 WAJIB: pastikan env kebaca
 if (!dbUrl) {
   throw new Error("DATABASE_URL tidak ditemukan di environment!");
 }
@@ -18,7 +21,7 @@ const sequelize = new Sequelize(dbUrl, {
       rejectUnauthorized: false
     }
   },
-  logging: false // biar log gak spam
+  logging: false 
 });
 
 module.exports = sequelize;

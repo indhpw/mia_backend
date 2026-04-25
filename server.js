@@ -1,109 +1,31 @@
 // backend/server.js
 'use strict';
-require("dotenv").config();
+require('dotenv').config();
 
-const express = require('express');
-const app = express();
+const app = require('./app');
 const sequelize = require('./config/database');
 const db = require('./models');
-const admin = require('firebase-admin');
 
-console.log('Starting server...');
-
-// Middleware
-app.use(express.json());
-
-// Log requests
-if(process.env.NODE_ENV !== 'production'){
-app.use((req, res, next) => {
-    console.log(`[${new Date().toISOString()}] ${req.method} ${req.originalUrl} Body:`, req.body);
-    next();
-});
-}
-
-// Inisialisasi Firebase
-let serviceAccount;
-
-try{
-if (process.env.FIREBASE_CONFIG) {
-let  serviceAccount = JSON.parse(process.env.FIREBASE_CONFIG);
-  serviceAccount.private_key = serviceAccount.private_key.replace(/\\n/g, '\n');
-
-  admin.initializeApp({
-    credential: admin.credential.cert(serviceAccount),
-    });
-
-  console.log("Firebase initialized");
-    }
-} catch (err) {
-  console.error("Firebase error:", err.message);
-}
-
-// Routes
-app.use('/api/devices', require('./routes/deviceRoutes'));
-app.use('/api/fasting', require('./routes/fastingRoutes'));
-app.use('/api/menstruation', require('./routes/menstruationRoutes'));
-app.use('/api/notifications', require('./routes/notificationRoutes'));
-
-console.log('All routes registered:', {
-    devices: '/api/devices',
-    fasting: '/api/fasting (debts, debts/:debt_id, debts/:debt_id/pay, payments)',
-    menstruation: '/api/menstruation',
-    notifications: '/api/notifications (test-weekly, test-ayyamul-bidh, test-cycle, test-payment)',
-});
-
-// Test endpoint
-app.get('/', (req, res) => {
-    res.send('OK')});
-
-app.get('/api/test', (req, res) => {
-    console.log('Hit /api/test');
-    res.json({ message: 'Server is running' });
-});
-
-// Handle not found
-app.use((req, res) => {
-    console.log('Not found:', req.originalUrl);
-    res.status(404).json({ error: 'Endpoint tidak ditemukan' });
-});
-
-// Handle errors
-app.use((err, req, res, next) => {
-    console.error('Global error:', err.message, err.stack);
-    res.status(500).json({ error: 'Kesalahan server internal', details: err.message });
-});
 
  const PORT = process.env.PORT || 8080;
 
- console.log("PORT:", PORT);
-
- //start server
-    app.listen(PORT, () => {
-        console.log(`Server running on port ${PORT}`);            
-    });
-
-
-// Sync database sequentially
-async function syncDatabase() {
+ async function startServer() {
     try {
         await sequelize.authenticate();
-        console.log('Database connected');
 
         await db.Device.sync({ alter: false });
         await db.MenstruationRecord.sync({ alter: false });
         await db.FastingDebt.sync({ alter: false });
         await db.FastingPayment.sync({ alter: false });
+        console.log('Database connected');
 
-        console.log('Database synchronized');
-        console.log('Loading NotificationService...');
-        require('./services/notificationService');
-        console.log('NotificationService loaded');
+        //start server 
+    app.listen(PORT, () => {
+        console.log(`Server running on port ${PORT}`);            
+    });
+
     } catch (err){
-        console.error('Failed to sync database:', err);
+        console.error('Startup error:', err);
     }
 }
-
-console.log("ENV:", process.env.DATABASE_URL);
-console.log("DATABASE_URL:", process.env.DATABASE_URL);
-
-syncDatabase();
+   startServer(); 
