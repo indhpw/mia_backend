@@ -89,7 +89,7 @@ const calculatePeriodLength = (startMoment, endMoment) => {
   if (startMoment && endMoment && endMoment.isValid() && startMoment.isValid()) {
     return endMoment.diff(startMoment, 'days') + 1;
   }
-  return null;
+  return 8;
 };
 
 // fungsi utility untuk menghitung cycle length
