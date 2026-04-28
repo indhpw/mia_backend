@@ -110,13 +110,13 @@ return Array.from(userMap.values());
 //cek user apakah sedang haid atau tidak
 const isUserMenstrating = async (device_id) => {
   const latestRecord = await MenstruationRecord.findOne({
-    where: { device_id: deviceId },
+    where: { device_id: device_id },
     order: [['start_date', 'DESC']]
   });
 
   if(!latestRecord) return false;
   
-  const start_date = new Date(latestRecord.period.length);
+  const start_date = new Date(latestRecord.start_date);
   
   const periodLength = 
   latestRecord.period_length && latestRecord.period_length > 0
@@ -129,7 +129,7 @@ const isUserMenstrating = async (device_id) => {
   const today = new Date();
 
   return today >= startDate && today <= endDate;
-  
+};
 
 //kirim notifikasi ke banyak user sekaligus
 const sendBulkNotification = async (users, title, bodyGenerator) => {
