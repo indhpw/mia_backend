@@ -129,7 +129,7 @@ const isUserMenstrating = async (device_id) => {
   const today = new Date();
 
   return today >= startDate && today <= endDate;
-  );
+  
 
 //kirim notifikasi ke banyak user sekaligus
 const sendBulkNotification = async (users, title, bodyGenerator) => {
