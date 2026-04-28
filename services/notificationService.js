@@ -116,7 +116,10 @@ const isUserMenstrating = async (device_id) => {
 
   if(!latestRecord) return false;
   
-  const start_date = new Date(latestRecord.period.length > 0
+  const start_date = new Date(latestRecord.period.length);
+  
+  const periodLength = 
+  latestRecord.period_length && latestRecord.period_length > 0
     ? latestRecord.period_length
     : 5;
 
