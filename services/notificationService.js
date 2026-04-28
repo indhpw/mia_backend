@@ -3,8 +3,8 @@
 const admin = require('firebase-admin');
 const cron = require('node-cron');
 const momentHijri = require('moment-hijri');
-const { Sequelize, Op } = require('sequelize');
-const { Device, FastingDebt, FastingPayment } = require('../models');
+const { Sequelize, Op, where } = require('sequelize');
+const { Device, MenstruationRecord, FastingDebt, FastingPayment } = require('../models');
 const { getTomorrowHijri, getHijriWithOverride } = require('../utils/hijriUtils');
 require('dotenv').config();
 
@@ -70,6 +70,13 @@ const userMap = new Map();
 
 for (const debt of debts) {
 
+  const sedangHaid = isUserMenstrating(debt.deviceId);
+
+  if(sedangHaid) {
+    console.log('Skip notif device ${debt.device_id} karena sedang haid');
+    continue;
+  }
+
   const totalPaid = (debt.payments || []). reduce(
     (sum, p) => sum + (p.amount || 0),
     0
@@ -99,6 +106,27 @@ return Array.from(userMap.values());
   }
 
 };
+
+//cek user apakah sedang haid atau tidak
+const isUserMenstrating = async (device_id) => {
+  const latestRecord = await MenstruationRecord.findOne({
+    where: { device_id: deviceId },
+    order: [['start_date', 'DESC']]
+  });
+
+  if(!latestRecord) return false;
+  
+  const start_date = new Date(latestRecord.period.length > 0
+    ? latestRecord.period_length
+    : 5;
+
+    const endDate = new Date(startDate);
+  endDate.setDate(endDate.getDate() + periodLength - 1);
+
+  const today = new Date();
+
+  return today >= startDate && today <= endDate;
+  );
 
 //kirim notifikasi ke banyak user sekaligus
 const sendBulkNotification = async (users, title, bodyGenerator) => {
