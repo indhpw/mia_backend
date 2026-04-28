@@ -72,6 +72,9 @@ for (const debt of debts) {
 
   const sedangHaid = isUserMenstrating(debt.deviceId);
 
+  console.log("CHECK DEVICE:", debt.device_id);
+  console.log("SEDANG HAID:", sedangHaid);
+
   if(sedangHaid) {
     console.log('Skip notif device ${debt.device_id} karena sedang haid');
     continue;
