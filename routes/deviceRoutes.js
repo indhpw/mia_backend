@@ -53,4 +53,10 @@ router.put('/:device_id/fcm_token', async (req, res) => {
   }
 });
 
+
+//buat tes endpoint
+router.get('/test', (req, res) => {
+  res.json({ message: 'device route works' });
+});
+
 module.exports = router;
